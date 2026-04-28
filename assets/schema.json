@@ -1,0 +1,57 @@
+{
+  "$schema": "https://frictionlessdata.io/schemas/table-schema.json",
+  "fields": [
+    {
+      "name": "uid",
+      "type": "string",
+      "title": "Eindeutige ID",
+      "description": "Eindeutige Kennung des Kalendereintrags",
+      "constraints": {
+        "required": true
+      }
+    },
+    {
+      "name": "start",
+      "type": "date",
+      "format": "%Y-%m-%d",
+      "title": "Datum",
+      "description": "Datum der Müllabholung",
+      "constraints": {
+        "required": true
+      }
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "title": "Müllart",
+      "description": "Art des Mülls",
+      "constraints": {
+        "required": true,
+        "enum": [
+          "Biotonne",
+          "Papiertonne",
+          "Restmüll",
+          "Restmüll 2-wöchentlich",
+          "Restmüll 4-wöchentlich",
+          "Gelbe/r Sack/Tonne",
+          "Gelber Sack",
+          "Schadstoffsammlung",
+          "Warentauschtag"
+        ]
+      }
+    },
+    {
+      "name": "location",
+      "type": "string",
+      "title": "Bezirk",
+      "description": "Stadtteil oder Bezirk der Abholung",
+      "constraints": {
+        "required": false
+      }
+    }
+  ],
+  "primaryKey": ["uid"],
+  "missingValues": ["", "null"],
+  "description": "Schema für Müllkalender-Daten - vereinfacht für App-Nutzung",
+  "title": "Müllkalender Schema"
+}
