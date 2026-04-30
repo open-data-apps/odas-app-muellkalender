@@ -22,10 +22,20 @@
     "* Als URL muss ein Link zum Datensatz angegeben werden. Beispiel:",
     "https://open-data-musterstadt.ckan.de/api/3/action/package_show?id=muellkalender_2024"
   ],
-  "tags-funktion": ["Verwaltungsprozess"],
-  "tags-dateityp": ["ics"],
-  "tags-datenart": ["Termine", "Kalender"],
-  "screenshots": ["assets/Desktop_Screenshot", "assets/Mobile_Screenshot"],
+  "tags-funktion": [
+    "Verwaltungsprozess"
+  ],
+  "tags-dateityp": [
+    "ics"
+  ],
+  "tags-datenart": [
+    "Termine",
+    "Kalender"
+  ],
+  "screenshots": [
+    "assets/Desktop_Screenshot",
+    "assets/Mobile_Screenshot"
+  ],
   "branding-css": "",
   "apiversion": "1",
   "instanz-config": {
@@ -145,7 +155,10 @@
       "format": {
         "typ": "markdown"
       },
-      "default": ["_multiline_", "Alle Daten sind geschützt."],
+      "default": [
+        "_multiline_",
+        "Alle Daten sind geschützt."
+      ],
       "erforderlich": "ja"
     },
     "urldaten": {
@@ -184,10 +197,29 @@
       "hilfe": "Angabe der App-Sprache",
       "format": {
         "typ": "dropdown",
-        "optionen": ["de"],
+        "optionen": [
+          "de"
+        ],
         "default": "de"
       },
       "erforderlich": "ja"
+    },
+    "urlDaten": {
+      "label": "URL zum Datensatz im ODP",
+      "hilfe": "Der Datensatz im Open Data Portal mit den Daten der Müllkalender App",
+      "format": {
+        "typ": "url"
+      },
+      "default": "",
+      "beispiel": "",
+      "erforderlich": "ja"
     }
-  }
+  },
+  "daten": {
+    "beschreibung": "Die Müllkalender-App verarbeitet konfigurierbare Open-Data-Ressourcen aus dem Open Data Portal (z.B. JSON- oder CSV-Endpunkte).",
+    "schema": "",
+    "beispiel": "",
+    "beispiel-url": ""
+  },
+  "api-version": "1"
 }
