@@ -7,6 +7,12 @@
  */
 let calendarData = {};
 
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
 function app(configData, enclosingHtmlDivElement) {
   enclosingHtmlDivElement.innerHTML = `<div class="row">
       <div class="col-6" id="calendarOptions">
@@ -14,8 +20,16 @@ function app(configData, enclosingHtmlDivElement) {
       <div class="col-6" id="convertEvents">
       </div>
     </div>
+    <div id="mk-datenfrische"></div>
     <div id="calendar">
-    </div>`;
+    </div>
+    <div id="mk-schale4"></div>`;
+
+  var mkSchale4 = document.getElementById("mk-schale4");
+  if (mkSchale4) {
+    mkSchale4.innerHTML = methodikBox(configData) + renderWeitereInfos(configData);
+  }
+
   loadAvailableCalendars(configData);
   createConvertToAllDayButton();
 }
@@ -49,6 +63,8 @@ function loadAvailableCalendars(configData) {
         console.error("Fehler beim Parsen der Kalenderdaten:", e);
         return;
       }
+      mkDatenfrische = extractDatenStandMk(data);
+      updateMkFrische(mkDatenfrische);
       if (data.success && data.result.resources) {
         const resources = data.result.resources;
         calendarData = resources.filter((resource) =>
@@ -247,10 +263,68 @@ function convertToAllDayEvents() {
   alert("Alle Termine wurden erfolgreich in ganztägige Termine umgewandelt.");
 }
 
+var mkDatenfrische = null;
+
+function methodikBox(configdata) {
+  var hinweis = String(configdata.datenquelleHinweis || "").trim();
+  var stand = String(configdata.datenStand || "").trim();
+  if (!hinweis && !stand) return "";
+  var standZeile = stand
+    ? '<p class="text-muted small mb-2">' + escapeHtml(stand) + "</p>"
+    : "";
+  return (
+    '<section class="mk-methodik mt-4">' +
+    '<button class="mk-methodik-toggle collapsed" type="button" ' +
+    'data-bs-toggle="collapse" data-bs-target="#mk-methodik-body" ' +
+    'aria-expanded="false" aria-controls="mk-methodik-body">' +
+    '<h2 class="h5 mb-0">Methodik &amp; Datenquelle</h2>' +
+    '<span class="mk-methodik-chevron" aria-hidden="true">&#9662;</span>' +
+    "</button>" +
+    '<div id="mk-methodik-body" class="collapse">' +
+    '<div class="mk-methodik-content">' +
+    standZeile +
+    hinweis +
+    "</div></div></section>"
+  );
+}
+
+function renderWeitereInfos(configdata) {
+  var links = (configdata.weiterfuehrendeLinks || "").trim();
+  if (!links) return "";
+  return (
+    '<section class="mk-weitere-infos mt-4">' +
+    '<h2 class="h5 mb-3">Weitere Informationen</h2>' +
+    '<div class="mk-weitere-infos-content">' +
+    links +
+    "</div></section>"
+  );
+}
+
+function extractDatenStandMk(apiResponse) {
+  var raw =
+    apiResponse?.result?.metadata_modified ||
+    apiResponse?.result?.last_modified ||
+    null;
+  if (!raw) return null;
+  var d = new Date(raw);
+  return isNaN(d.getTime()) ? null : d.toLocaleDateString("de-DE");
+}
+
+function updateMkFrische(stand) {
+  var el = document.getElementById("mk-datenfrische");
+  if (el) {
+    el.innerHTML = stand
+      ? '<div class="text-muted small text-end mb-2">Aktualisiert: ' +
+        escapeHtml(stand) +
+        "</div>"
+      : "";
+  }
+}
+
 /* 
  * Diese Funktion kann Bibliotheken und benötigte Skripte laden. 
  * Sie hängt den zurückgegebenen HTML Code in die Head Section an. 
-
+ 
  * @returns {string} - HTML mit script, link, etc. Tags
  */
 function addToHead() {

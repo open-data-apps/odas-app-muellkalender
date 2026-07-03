@@ -3,9 +3,9 @@
   "app-entwickler-name": "mueller-gmbh",
   "name-in-url": "muellkalender",
   "name": "Müllkalender",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "odas-app-icon": "assets/odas-app-icon.svg",
-  "app-icon": "app/app-icon.png",
+  "app-icon": "assets/odas-app-icon.svg",
   "kurzbeschreibung": "Nie wieder die Müllabfuhr verpassen: Diese App zeigt alle Abholtermine übersichtlich an.",
   "beschreibung": [
     "_multiline_",
@@ -106,6 +106,8 @@
         "_multiline_",
         "Die Müllkalender-App zeigt die Abfuhrtermine für ausgewählte Stadtgebiete.",
         "Die Daten werden tagesaktuell gehalten. Bei Änderungen versuchen wir, den Datenbestend immer sofort zu aktualisieren.",
+        "## Für wen ist diese App?",
+        "Dieser Abfallkalender zeigt die Entsorgungstermine für Ihre Straße. Er richtet sich an alle Bürger:innen, die ihre Müllabfuhr-Termine im Blick behalten möchten.",
         "## App-Anbieter",
         "Die App wird bereit gestellt von <a href=\"{{odp.anbieter.url}}\">{{odp.anbieter.name}}</a>",
         "## Datenquelle",
@@ -213,6 +215,27 @@
       "default": "",
       "beispiel": "",
       "erforderlich": "ja"
+    },
+    "datenquelleHinweis": {
+      "label": "Methodik / Datenquelle-Hinweis",
+      "hilfe": "Herkunft, Erhebungsmethode, Limitierungen (Markdown/HTML). Leer = ausgeblendet.",
+      "format": { "typ": "markdown" },
+      "default": "",
+      "erforderlich": "nein"
+    },
+    "datenStand": {
+      "label": "Datenstand",
+      "hilfe": "Freitext-Datum, z.B. 'Stand: Januar 2025'. Leer = ausgeblendet.",
+      "format": { "typ": "string", "laenge": 60 },
+      "default": "",
+      "erforderlich": "nein"
+    },
+    "weiterfuehrendeLinks": {
+      "label": "Weiterführende Links",
+      "hilfe": "Verwandte Datensätze / Hintergrundquellen (Markdown/HTML). Leer = ausgeblendet.",
+      "format": { "typ": "markdown" },
+      "default": "",
+      "erforderlich": "nein"
     }
   },
   "daten": {
