@@ -163,16 +163,6 @@
       ],
       "erforderlich": "ja"
     },
-    "urldaten": {
-      "label": "URL zum Datensatz im ODP",
-      "hilfe": "Der Datensatz im Open Data Portal mit den ICS-Einzeldateien des Müllkalenders",
-      "format": {
-        "typ": "url"
-      },
-      "default": "{{appconfig.datensatz-url}}",
-      "beispiel": "https://open-data-musterstadt.ckan.de/dataset/muellkalender_2024",
-      "erforderlich": "ja"
-    },
     "fusszeile": {
       "label": "Fußzeile",
       "hilfe": "Wird auf der Website unten in der Fusszeile angezeigt.",
@@ -219,21 +209,28 @@
     "datenquelleHinweis": {
       "label": "Methodik / Datenquelle-Hinweis",
       "hilfe": "Herkunft, Erhebungsmethode, Limitierungen (Markdown/HTML). Leer = ausgeblendet.",
-      "format": { "typ": "markdown" },
+      "format": {
+        "typ": "markdown"
+      },
       "default": "",
       "erforderlich": "nein"
     },
     "datenStand": {
       "label": "Datenstand",
       "hilfe": "Freitext-Datum, z.B. 'Stand: Januar 2025'. Leer = ausgeblendet.",
-      "format": { "typ": "string", "laenge": 60 },
+      "format": {
+        "typ": "string",
+        "laenge": 60
+      },
       "default": "",
       "erforderlich": "nein"
     },
     "weiterfuehrendeLinks": {
       "label": "Weiterführende Links",
       "hilfe": "Verwandte Datensätze / Hintergrundquellen (Markdown/HTML). Leer = ausgeblendet.",
-      "format": { "typ": "markdown" },
+      "format": {
+        "typ": "markdown"
+      },
       "default": "",
       "erforderlich": "nein"
     }
