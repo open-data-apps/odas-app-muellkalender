@@ -6,11 +6,89 @@
  * @returns {string} - darzustellendes HTML
  */
 let calendarData = {};
+let calendarAssetsPromise = null;
 
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.appendChild(document.createTextNode(str));
   return div.innerHTML;
+}
+
+function appAssetUrl(relativePath) {
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.hash = "";
+
+  let pathname = url.pathname;
+  if (!pathname.endsWith("/")) {
+    pathname = pathname.substring(0, pathname.lastIndexOf("/") + 1);
+  }
+  if (pathname.endsWith("/app/")) {
+    pathname = pathname.slice(0, -4);
+  }
+
+  return url.origin + pathname + relativePath.replace(/^\/+/, "");
+}
+
+function loadStyleOnce(id, href) {
+  if (document.getElementById(id)) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = href;
+    link.onload = resolve;
+    link.onerror = () => reject(new Error("Stylesheet konnte nicht geladen werden: " + href));
+    document.head.appendChild(link);
+  });
+}
+
+function loadScriptOnce(id, src, globalName) {
+  if (globalName && window[globalName]) return Promise.resolve();
+
+  const existing = document.getElementById(id);
+  if (existing) {
+    if (existing.dataset.loaded === "true") return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      existing.addEventListener("load", resolve, { once: true });
+      existing.addEventListener("error", () => reject(new Error("Script konnte nicht geladen werden: " + src)), { once: true });
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.id = id;
+    script.src = src;
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      resolve();
+    };
+    script.onerror = () => reject(new Error("Script konnte nicht geladen werden: " + src));
+    document.head.appendChild(script);
+  });
+}
+
+function ensureCalendarAssets() {
+  if (calendarAssetsPromise) return calendarAssetsPromise;
+
+  calendarAssetsPromise = Promise.all([
+    loadStyleOnce("mk-calendar-css", appAssetUrl("dist/calendar.js.min.css")),
+    loadScriptOnce(
+      "mk-ical-js",
+      "https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.4.0/ical.min.js",
+      "ICAL",
+    ),
+    loadScriptOnce(
+      "mk-calendar-translations-de",
+      appAssetUrl("dist/translations/calendar.translations.de.js"),
+      "__TRANSLATION_OPTIONS",
+    ),
+  ]).then(() =>
+    loadScriptOnce("mk-calendar-js", appAssetUrl("dist/calendar.min.js"), "calendarJs"),
+  );
+
+  return calendarAssetsPromise;
 }
 
 function app(configData, enclosingHtmlDivElement) {
@@ -121,7 +199,9 @@ function loadCalendar(calendarUrl) {
 
   fetch(proxyEndpoint, { method: "POST" })
     .then((response) => response.json())
-    .then((proxyData) => {
+    .then(async (proxyData) => {
+      await ensureCalendarAssets();
+
       let icsData;
       try {
         icsData = proxyData.content;
@@ -134,7 +214,7 @@ function loadCalendar(calendarUrl) {
 
       const calendarInstance = new calendarJs(
         "calendar",
-        __TRANSLATION_OPTIONS,
+        window.__TRANSLATION_OPTIONS || {},
         {
           manualEditingEnabled: false,
           id: "calendar-container",
@@ -328,40 +408,9 @@ function updateMkFrische(stand) {
  * @returns {string} - HTML mit script, link, etc. Tags
  */
 function addToHead() {
-  const currentUrl = window.location.href;
-
-  // Stylesheet
-  const stylesheet = "dist/calendar.js.min.css";
-  const styleSheetUrl = currentUrl + stylesheet;
-
-  const stylesheetLink = document.createElement("link");
-  stylesheetLink.rel = "stylesheet";
-  stylesheetLink.href = styleSheetUrl;
-
-  document.head.appendChild(stylesheetLink);
-
-  const ical = document.createElement("script");
-  ical.type = "text/javascript";
-  ical.src = "https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.4.0/ical.min.js";
-  document.head.appendChild(ical);
-
-  // Translations
-  const translation = "dist/translations/calendar.translations.de.js";
-  const translationUrl = currentUrl + translation;
-
-  const translationScript = document.createElement("script");
-  translationScript.src = translationUrl;
-
-  document.head.appendChild(translationScript);
-
-  // Calendar.js
-  const calender = "dist/calendar.js";
-  const calenderUrl = currentUrl + calender;
-
-  const calenderScript = document.createElement("script");
-  calenderScript.src = calenderUrl;
-
-  document.head.appendChild(calenderScript);
+  ensureCalendarAssets().catch((err) =>
+    console.error("Kalender-Bibliotheken konnten nicht vorgeladen werden:", err),
+  );
 
   return ``;
 }

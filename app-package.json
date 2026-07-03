@@ -9,18 +9,19 @@
   "kurzbeschreibung": "Nie wieder die Müllabfuhr verpassen: Diese App zeigt alle Abholtermine übersichtlich an.",
   "beschreibung": [
     "_multiline_",
-    "Der Müllkalender zeigt einen Kalender mit",
-    "mit Straßen-/Gebietsauswahl an. Die Daten werden aus einem Open",
-    "Data Portal bezogen und müssen in Form von ICS-Dateien vorliegen.",
-    "Die Daten müssen in einem Open Data Portal",
-    "wie folgt aufgebaut sein: \n",
-    "* Datensatz: mit allen Abholstellen als Ressourcen",
-    "* Ressourcen: Jede Abholstelle ist als ICS-Datei anzulegen.",
-    "* Der Name der Ressource wird als Dropdown in der App angezeigt.",
-    "* In der ICS-Datei befinden sich die Termine für die Abfuhrtermine",
-    "und -Arten",
-    "* Als URL muss ein Link zum Datensatz angegeben werden. Beispiel:",
-    "https://open-data-musterstadt.ckan.de/api/3/action/package_show?id=muellkalender_2024"
+    "<p>Die Müllkalender-App zeigt Abfuhrtermine übersichtlich nach Gebiet, Straße oder Fraktion an.</p>",
+    "<p>Sie hilft Bürger:innen, Entsorgungstermine schneller zu finden und besser zu planen.</p>",
+    "<h3>Inhalte</h3>",
+    "<p>Die App verarbeitet Termin- und Abfallfraktionsdaten aus einer konfigurierten Quelle. Je nach Datensatz können Tabellen, Filter und Kalenderfunktionen verfügbar sein.</p>",
+    "<h3>Nutzung</h3>",
+    "<p>Wählen Sie den passenden Bereich oder die gewünschte Abfallart und prüfen Sie die angezeigten Termine. Maßgeblich bleiben die Informationen der zuständigen Entsorgungsstelle.</p>",
+    "<h3>Für wen ist diese App?</h3>",
+    "<p>Die App richtet sich an Bürger:innen, Entsorgungsbetriebe und Kommunen, die Abfuhrtermine digital zugänglich machen möchten. Besondere Datenkenntnisse sind für die Nutzung nicht erforderlich.</p>",
+    "<h3>Datenquelle</h3>",
+    "<p>Die Termine werden aus dem konfigurierten Open-Data-Datensatz geladen.</p>",
+    "<ul><li><strong>Open Data Portal:</strong> <a href=\"{{odp.url}}\" target=\"_blank\" rel=\"noopener\">{{odp.name}}</a></li><li><strong>Ressource/API-Endpunkt:</strong> <a href=\"{{appconfig.datensatz-apiurl}}\" target=\"_blank\" rel=\"noopener\">Konfigurierter Müllkalender-Endpunkt</a></li></ul>",
+    "<h3>Open Data App Store</h3>",
+    "<p>Diese App ist für den Open Data App Store vorbereitet und kann mit Abfuhrterminen anderer Kommunen konfiguriert werden.</p>"
   ],
   "tags-funktion": [
     "Verwaltungsprozess"
@@ -104,19 +105,19 @@
       },
       "default": [
         "_multiline_",
-        "Die Müllkalender-App zeigt die Abfuhrtermine für ausgewählte Stadtgebiete.",
-        "Die Daten werden tagesaktuell gehalten. Bei Änderungen versuchen wir, den Datenbestend immer sofort zu aktualisieren.",
-        "## Für wen ist diese App?",
-        "Dieser Abfallkalender zeigt die Entsorgungstermine für Ihre Straße. Er richtet sich an alle Bürger:innen, die ihre Müllabfuhr-Termine im Blick behalten möchten.",
-        "## App-Anbieter",
-        "Die App wird bereit gestellt von <a href=\"{{odp.anbieter.url}}\">{{odp.anbieter.name}}</a>",
-        "## Datenquelle",
-        "Die Daten kommen aus  unserem Open Data Portal <a href=\"{{odp.url}}\">{{odp.name}}</a>",
-        "Die Datenquelle ist in unserem Open Data Portal <a href=\"{{appinstanz.apiurl}}\">{{appinstanz.apiurl}}</a>.",
-        "## Über diese App",
-        "Die App wurde entwickelt von <a href=\"{{app.developer.url}}\">{{app.developer.name}}</a>. App-Version: {{app.version}}.",
-        "## Open Data App Store",
-        "Der Open Data App Store betrieben von <a href=\"{{odas.betreiber.url}}\">{{odas.betreiber.name}}</a>"
+        "<p>Die Müllkalender-App zeigt Abfuhrtermine übersichtlich nach Gebiet, Straße oder Fraktion an.</p>",
+        "<p>Sie hilft Bürger:innen, Entsorgungstermine schneller zu finden und besser zu planen.</p>",
+        "<h3>Inhalte</h3>",
+        "<p>Die App verarbeitet Termin- und Abfallfraktionsdaten aus einer konfigurierten Quelle. Je nach Datensatz können Tabellen, Filter und Kalenderfunktionen verfügbar sein.</p>",
+        "<h3>Nutzung</h3>",
+        "<p>Wählen Sie den passenden Bereich oder die gewünschte Abfallart und prüfen Sie die angezeigten Termine. Maßgeblich bleiben die Informationen der zuständigen Entsorgungsstelle.</p>",
+        "<h3>Für wen ist diese App?</h3>",
+        "<p>Die App richtet sich an Bürger:innen, Entsorgungsbetriebe und Kommunen, die Abfuhrtermine digital zugänglich machen möchten. Besondere Datenkenntnisse sind für die Nutzung nicht erforderlich.</p>",
+        "<h3>Datenquelle</h3>",
+        "<p>Die Termine werden aus dem konfigurierten Open-Data-Datensatz geladen.</p>",
+        "<ul><li><strong>Open Data Portal:</strong> <a href=\"{{odp.url}}\" target=\"_blank\" rel=\"noopener\">{{odp.name}}</a></li><li><strong>Ressource/API-Endpunkt:</strong> <a href=\"{{appconfig.datensatz-apiurl}}\" target=\"_blank\" rel=\"noopener\">Konfigurierter Müllkalender-Endpunkt</a></li></ul>",
+        "<h3>Open Data App Store</h3>",
+        "<p>Diese App ist für den Open Data App Store vorbereitet und kann mit Abfuhrterminen anderer Kommunen konfiguriert werden.</p>"
       ],
       "erforderlich": "ja"
     },
@@ -212,7 +213,7 @@
       "format": {
         "typ": "markdown"
       },
-      "default": "",
+      "default": "<p>Die Müllkalender-App lädt Abfuhrtermine aus der konfigurierten Datenquelle und bereitet sie nach Gebiet, Straße oder Abfallfraktion auf. Die angezeigten Termine entsprechen dem Datenstand der Quelle; verbindlich bleiben die Informationen der zuständigen Entsorgungsstelle.</p>",
       "erforderlich": "nein"
     },
     "datenStand": {
@@ -222,7 +223,7 @@
         "typ": "string",
         "laenge": 60
       },
-      "default": "",
+      "default": "Stand: abhängig vom konfigurierten Abfuhrkalender",
       "erforderlich": "nein"
     },
     "weiterfuehrendeLinks": {
@@ -231,7 +232,7 @@
       "format": {
         "typ": "markdown"
       },
-      "default": "",
+      "default": "<ul><li><a href=\"{{odp.url}}\" target=\"_blank\" rel=\"noopener\">{{odp.name}}</a></li><li><a href=\"{{appconfig.datensatz-apiurl}}\" target=\"_blank\" rel=\"noopener\">Konfigurierter Müllkalender-Endpunkt</a></li><li><a href=\"https://open-data-app-store.de\" target=\"_blank\" rel=\"noopener\">Open Data App Store</a></li></ul>",
       "erforderlich": "nein"
     }
   },

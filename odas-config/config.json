@@ -5,7 +5,21 @@
   "icon": "logo_ondics.png",
   "brandingCSS": "",
   "brandingCSSFile": "",
-  "beschreibung": "",
+  "beschreibung": [
+    "<p>Die Müllkalender-App zeigt Abfuhrtermine übersichtlich nach Gebiet, Straße oder Fraktion an.</p>",
+    "<p>Sie hilft Bürger:innen, Entsorgungstermine schneller zu finden und besser zu planen.</p>",
+    "<h3>Inhalte</h3>",
+    "<p>Die App verarbeitet Termin- und Abfallfraktionsdaten aus einer konfigurierten Quelle. Je nach Datensatz können Tabellen, Filter und Kalenderfunktionen verfügbar sein.</p>",
+    "<h3>Nutzung</h3>",
+    "<p>Wählen Sie den passenden Bereich oder die gewünschte Abfallart und prüfen Sie die angezeigten Termine. Maßgeblich bleiben die Informationen der zuständigen Entsorgungsstelle.</p>",
+    "<h3>Für wen ist diese App?</h3>",
+    "<p>Die App richtet sich an Bürger:innen, Entsorgungsbetriebe und Kommunen, die Abfuhrtermine digital zugänglich machen möchten. Besondere Datenkenntnisse sind für die Nutzung nicht erforderlich.</p>",
+    "<h3>Datenquelle</h3>",
+    "<p>Die Termine werden aus dem konfigurierten Open-Data-Datensatz geladen.</p>",
+    "<ul><li><strong>Open Data Portal:</strong> <a href=\"{{odp.url}}\" target=\"_blank\" rel=\"noopener\">{{odp.name}}</a></li><li><strong>Ressource/API-Endpunkt:</strong> <a href=\"{{appconfig.datensatz-apiurl}}\" target=\"_blank\" rel=\"noopener\">Konfigurierter Müllkalender-Endpunkt</a></li></ul>",
+    "<h3>Open Data App Store</h3>",
+    "<p>Diese App ist für den Open Data App Store vorbereitet und kann mit Abfuhrterminen anderer Kommunen konfiguriert werden.</p>"
+  ],
   "kontakt": "Tel.: <a href='tel:+49711310093100'>0711-31009-3100</a><br>Fax: <a href='tel:+49711310093108'>0711-31009-3108</a><br>E-Mail: <a href='mailto:info@ondics.de'>info@ondics.de</a>",
   "impressum": "Ondics GmbH<br>Wolfgang Clauss<br>Blumenstrasse 19<br><a href='https://www.ondics.de/' target='_blank'>https://www.ondics.de/</a>",
   "datenschutz": "",
@@ -14,7 +28,7 @@
   "fusszeile": "(C) Copyright 2025 | Inhalt: Stadt Esslingen | App: Mueller GmbH | Provided by: Ondics GmbH",
   "apiurl": "https://open-data-musterstadt.ckan.de/api/3/action/package_show?id=muellkalender_2024",
   "sprache": "de",
-  "datenquelleHinweis": "",
-  "datenStand": "",
-  "weiterfuehrendeLinks": ""
+  "datenquelleHinweis": "<p>Die Müllkalender-App lädt Abfuhrtermine aus der konfigurierten Datenquelle und bereitet sie nach Gebiet, Straße oder Abfallfraktion auf. Die angezeigten Termine entsprechen dem Datenstand der Quelle; verbindlich bleiben die Informationen der zuständigen Entsorgungsstelle.</p>",
+  "datenStand": "Stand: abhängig vom konfigurierten Abfuhrkalender",
+  "weiterfuehrendeLinks": "<ul><li><a href=\"{{odp.url}}\" target=\"_blank\" rel=\"noopener\">{{odp.name}}</a></li><li><a href=\"{{appconfig.datensatz-apiurl}}\" target=\"_blank\" rel=\"noopener\">Konfigurierter Müllkalender-Endpunkt</a></li><li><a href=\"https://open-data-app-store.de\" target=\"_blank\" rel=\"noopener\">Open Data App Store</a></li></ul>"
 }
