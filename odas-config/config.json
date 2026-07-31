@@ -5,7 +5,7 @@
   "seitentitel": "Müll Kalender Esslingen",
   "icon": "logo_ondics.png",
   "brandingCSS": "",
-  "brandingCSSFile": "",
+  "brandingCSSFile": "../assets/branding.css",
   "beschreibung": [
     "<p>Die Müllkalender-App zeigt Abfuhrtermine übersichtlich nach Gebiet, Straße oder Fraktion an.</p>",
     "<p>Sie hilft Bürger:innen, Entsorgungstermine schneller zu finden und besser zu planen.</p>",
