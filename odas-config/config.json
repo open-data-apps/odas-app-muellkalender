@@ -26,7 +26,7 @@
   "datenschutz": "",
   "urlODP": "<a href='https://offenedaten.esslingen.de' target='_blank'>https://offenedaten.esslingen.de</a>",
   "urlDaten": "<a href='https://offenedaten.esslingen.de/Ondics_GmbH' target='_blank'>https://offenedaten.esslingen.de/Ondics_GmbH</a>",
-  "fusszeile": "(C) Copyright 2025 | Inhalt: Stadt Esslingen | App: Mueller GmbH | Provided by: Ondics GmbH",
+  "fusszeile": "(C) Copyright 2025 | Inhalt: Stadt Esslingen | App: Ondics GmbH | Provided by: Ondics GmbH",
   "apiurl": "https://open-data-musterstadt.ckan.de/api/3/action/package_show?id=muellkalender_2024",
   "sprache": "de",
   "datenquelleHinweis": "<p>Die Müllkalender-App lädt Abfuhrtermine aus der konfigurierten Datenquelle und bereitet sie nach Gebiet, Straße oder Abfallfraktion auf. Die angezeigten Termine entsprechen dem Datenstand der Quelle; verbindlich bleiben die Informationen der zuständigen Entsorgungsstelle.</p>",
