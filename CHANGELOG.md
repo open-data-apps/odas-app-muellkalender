@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.7.0 - 2026-07-31
+- FIX: Alle Fehlerpfade erreichen die Oberflaeche (F-15) - nicht erreichbare Quelle,
+  fehlerhafte API-Antwort, fehlender Kalender und defekte ICS-Datei werden sichtbar
+  gemeldet statt nur auf der Konsole
+- FIX: CKAN-Ressourcen ohne format-Feld loesen keinen TypeError mehr aus
+- ENH: Leerer Kalender wird als Hinweis vom Fehlerfall unterschieden
+
 ## 1.6.0 - 2026-07-31
 - CHG: fehlendes Pflicht-Asset assets/branding.css ergaenzt und brandingCSSFile lokal aktiviert
 

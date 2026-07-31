@@ -102,6 +102,7 @@ function app(configData, enclosingHtmlDivElement) {
       </div>
     </div>
     <div id="mk-datenfrische"></div>
+    <div id="mk-status"></div>
     <div id="calendar">
     </div>
     <div id="mk-schale4"></div>`;
@@ -113,6 +114,31 @@ function app(configData, enclosingHtmlDivElement) {
 
   loadAvailableCalendars(configData);
   createConvertToAllDayButton();
+}
+
+// ── SICHTBARE ZUSTÄNDE ───────────────────────────────────────────────────────
+// Jeder Fehlerpfad muss die Oberfläche erreichen. Ein stumm leerer Kalender ist
+// von "in diesem Zeitraum wird nicht geleert" nicht zu unterscheiden.
+
+function setMkStatus(html) {
+  const status = document.getElementById("mk-status");
+  if (status) status.innerHTML = html || "";
+}
+
+function showMkError(text) {
+  setMkStatus(
+    '<div class="alert alert-danger" role="alert">' + escapeHtml(text) + "</div>",
+  );
+}
+
+function showMkInfo(text) {
+  setMkStatus(
+    '<div class="alert alert-info" role="alert">' + escapeHtml(text) + "</div>",
+  );
+}
+
+function clearMkStatus() {
+  setMkStatus("");
 }
 
 // Hilfsfunktion: Nur Pfad aus vollständiger URL extrahieren
@@ -201,10 +227,13 @@ function loadAvailableCalendars(configData) {
     .then((data) => {
       mkDatenfrische = extractDatenStandMk(data);
       updateMkFrische(mkDatenfrische);
-      if (data.success && data.result.resources) {
+      if (data.success && data.result && data.result.resources) {
         const resources = data.result.resources;
+        // Ressourcen ohne format-Feld dürfen keinen TypeError auslösen.
         calendarData = resources.filter((resource) =>
-          resource.format.toLowerCase().includes("ics")
+          String((resource && resource.format) || "")
+            .toLowerCase()
+            .includes("ics")
         );
 
         if (calendarData.length > 0) {
@@ -212,12 +241,23 @@ function loadAvailableCalendars(configData) {
           loadCalendar(calendarData[0].url, configData);
         } else {
           console.error("Keine Kalender im passenden Format gefunden.");
+          showMkInfo(
+            "Für diese Datenquelle ist derzeit kein Abfuhrkalender hinterlegt.",
+          );
         }
       } else {
         console.error("Fehlerhafte API-Antwort:", data);
+        showMkError(
+          "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+        );
       }
     })
-    .catch((err) => console.error("Fehler beim Laden der Kalenderdaten:", err));
+    .catch((err) => {
+      console.error("Fehler beim Laden der Kalenderdaten:", err);
+      showMkError(
+        "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+      );
+    });
 }
 
 // Dropdown-Menü erstellen
@@ -249,14 +289,27 @@ function createCalendarDropdown(resources, configData = {}) {
 function loadCalendar(calendarUrl, configData = {}) {
   if (!calendarUrl) {
     console.error("Keine URL für den Kalender angegeben.");
+    showMkError(
+      "Für den ausgewählten Kalender ist keine Datenquelle hinterlegt.",
+    );
     return;
   }
+  clearMkStatus();
   // ICS laden: direkt oder ueber den ODAS-Proxy (proxyAktiv)
   fetchOdasResource(calendarUrl, configData)
     .then(async (icsData) => {
       await ensureCalendarAssets();
 
       const events = parseIcsToEvents(icsData);
+      if (events === null) {
+        showMkError(
+          "Der Abfuhrkalender konnte nicht gelesen werden. Bitte versuchen Sie es später erneut.",
+        );
+        return;
+      }
+      if (events.length === 0) {
+        showMkInfo("Für diesen Kalender sind derzeit keine Termine hinterlegt.");
+      }
       const calendarElement = document.getElementById("calendar");
 
       const calendarInstance = new calendarJs(
@@ -274,7 +327,12 @@ function loadCalendar(calendarUrl, configData = {}) {
       calendarInstance.setEvents(events);
       calendarElement.__calendarInstance = calendarInstance;
     })
-    .catch((err) => console.error("Fehler beim Laden der Kalenderdaten:", err));
+    .catch((err) => {
+      console.error("Fehler beim Laden der Kalenderdaten:", err);
+      showMkError(
+        "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+      );
+    });
 }
 
 // Termine aus ICS-Daten extrahieren
@@ -328,6 +386,9 @@ function parseIcsToEvents(icsData) {
     });
   } catch (error) {
     console.error("Fehler beim Parsen der ICS-Daten:", error);
+    // null = Parsen fehlgeschlagen; leeres Array = gelesen, aber ohne Termine.
+    // Der Aufrufer unterscheidet daran Fehler- und Leerzustand.
+    return null;
   }
   return events;
 }
@@ -359,6 +420,9 @@ function convertToAllDayEvents() {
 
   if (!calendarInstance) {
     console.error("Keine gültige Kalenderinstanz gefunden.");
+    showMkError(
+      "Der Kalender ist noch nicht geladen. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+    );
     return;
   }
 
