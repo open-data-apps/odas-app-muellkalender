@@ -346,33 +346,32 @@ function parseIcsToEvents(icsData) {
     vevents.forEach((vevent) => {
       const event = new ICAL.Event(vevent);
 
-      // Dynamische Farbzuteilung basierend auf dem Titel
+      // Dynamische Farbzuteilung basierend auf dem Titel.
+      // Normalisiert (Kleinschreibung, Umlaute gefaltet) und per Teilstring
+      // geprüft, damit abweichend benannte Tonnenarten (z.B. "Restmuell",
+      // "Bio-Tonne") nicht unnötig auf Grau fallen.
       const title = event.summary || "Kein Titel";
-      let color = "gray"; // Standardfarbe
-      switch (title.toLowerCase()) {
-        case "biotonne":
-          color = "green";
-          break;
-        case "papiertonne":
-          color = "blue";
-          break;
-        case "restmüll":
-          color = "black";
-          break;
-        case "restmüll 2-wöchentlich":
-          color = "black";
-          break;
-        case "restmüll 4-wöchentlich":
-          color = "black";
-          break;
-        case "gelbe/r sack/tonne":
-          color = "#ffd966";
-          break;
-        case "gelber sack":
-          color = "#ffd966";
-          break;
-        default:
-          color = "gray"; // Standardfarbe für unbekannte Ereignisse
+      const normalizedTitle = title
+        .toLowerCase()
+        .replace(/ü/g, "ue")
+        .replace(/ö/g, "oe")
+        .replace(/ä/g, "ae")
+        .replace(/ß/g, "ss");
+
+      const TONNENFARBEN = [
+        { pattern: /bio/, color: "green" },
+        { pattern: /papier/, color: "blue" },
+        { pattern: /rest/, color: "black" },
+        { pattern: /gelb/, color: "#ffd966" },
+      ];
+      const treffer = TONNENFARBEN.find((eintrag) =>
+        eintrag.pattern.test(normalizedTitle),
+      );
+      const color = treffer ? treffer.color : "gray";
+
+      let description = event.description || "Keine Beschreibung verfügbar";
+      if (!treffer) {
+        description += " (Keine automatische Farbzuordnung für diese Tonnenart.)";
       }
 
       // Ereignis hinzufügen
@@ -380,7 +379,7 @@ function parseIcsToEvents(icsData) {
         from: new Date(event.startDate.toJSDate()),
         to: new Date(event.endDate.toJSDate()),
         title: title,
-        description: event.description || "Keine Beschreibung verfügbar",
+        description: description,
         color: color, // Farbe setzen
       });
     });
