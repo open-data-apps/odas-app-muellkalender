@@ -79,7 +79,7 @@ function ensureCalendarAssets() {
     loadStyleOnce("mk-calendar-css", appAssetUrl("dist/calendar.js.min.css")),
     loadScriptOnce(
       "mk-ical-js",
-      "https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.4.0/ical.min.js",
+      "vendor/icaljs/ical.min.js",
       "ICAL",
     ),
     loadScriptOnce(
