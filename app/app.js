@@ -96,49 +96,51 @@ function ensureCalendarAssets() {
 
 function app(configData, enclosingHtmlDivElement) {
   enclosingHtmlDivElement.innerHTML = `<div class="row">
-      <div class="col-6" id="calendarOptions">
+      <div class="col-6" id="mk-calendarOptions">
       </div>
-      <div class="col-6" id="convertEvents">
+      <div class="col-6" id="mk-convertEvents">
       </div>
     </div>
     <div id="mk-datenfrische"></div>
     <div id="mk-status"></div>
-    <div id="calendar">
+    <div id="mk-calendar">
     </div>
     <div id="mk-schale4"></div>`;
 
-  var mkSchale4 = document.getElementById("mk-schale4");
+  var mkSchale4 = enclosingHtmlDivElement.querySelector("#mk-schale4");
   if (mkSchale4) {
     mkSchale4.innerHTML = methodikBox(configData) + renderWeitereInfos(configData);
   }
 
-  loadAvailableCalendars(configData);
-  createConvertToAllDayButton();
+  loadAvailableCalendars(configData, enclosingHtmlDivElement);
+  createConvertToAllDayButton(enclosingHtmlDivElement);
 }
 
 // ── SICHTBARE ZUSTÄNDE ───────────────────────────────────────────────────────
 // Jeder Fehlerpfad muss die Oberfläche erreichen. Ein stumm leerer Kalender ist
 // von "in diesem Zeitraum wird nicht geleert" nicht zu unterscheiden.
 
-function setMkStatus(html) {
-  const status = document.getElementById("mk-status");
+function setMkStatus(root, html) {
+  const status = root && root.querySelector("#mk-status");
   if (status) status.innerHTML = html || "";
 }
 
-function showMkError(text) {
+function showMkError(root, text) {
   setMkStatus(
+    root,
     '<div class="alert alert-danger" role="alert">' + escapeHtml(text) + "</div>",
   );
 }
 
-function showMkInfo(text) {
+function showMkInfo(root, text) {
   setMkStatus(
+    root,
     '<div class="alert alert-info" role="alert">' + escapeHtml(text) + "</div>",
   );
 }
 
-function clearMkStatus() {
-  setMkStatus("");
+function clearMkStatus(root) {
+  setMkStatus(root, "");
 }
 
 // Hilfsfunktion: Nur Pfad aus vollständiger URL extrahieren
@@ -221,12 +223,12 @@ async function fetchOdasJson(targetUrl, configdata = {}) {
 }
 
 // Lade Kalender von der API über Proxy
-function loadAvailableCalendars(configData) {
+function loadAvailableCalendars(configData, root) {
   // Daten laden: direkt oder ueber den ODAS-Proxy (proxyAktiv)
   fetchOdasJson(configData.apiurl, configData)
     .then((data) => {
       mkDatenfrische = extractDatenStandMk(data);
-      updateMkFrische(mkDatenfrische);
+      updateMkFrische(mkDatenfrische, root);
       if (data.success && data.result && data.result.resources) {
         const resources = data.result.resources;
         // Ressourcen ohne format-Feld dürfen keinen TypeError auslösen.
@@ -237,17 +239,19 @@ function loadAvailableCalendars(configData) {
         );
 
         if (calendarData.length > 0) {
-          createCalendarDropdown(calendarData, configData);
-          loadCalendar(calendarData[0].url, configData);
+          createCalendarDropdown(calendarData, configData, root);
+          loadCalendar(calendarData[0].url, configData, root);
         } else {
           console.error("Keine Kalender im passenden Format gefunden.");
           showMkInfo(
+            root,
             "Für diese Datenquelle ist derzeit kein Abfuhrkalender hinterlegt.",
           );
         }
       } else {
         console.error("Fehlerhafte API-Antwort:", data);
         showMkError(
+          root,
           "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
         );
       }
@@ -255,14 +259,15 @@ function loadAvailableCalendars(configData) {
     .catch((err) => {
       console.error("Fehler beim Laden der Kalenderdaten:", err);
       showMkError(
+        root,
         "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
       );
     });
 }
 
 // Dropdown-Menü erstellen
-function createCalendarDropdown(resources, configData = {}) {
-  const mainContent = document.getElementById("calendarOptions");
+function createCalendarDropdown(resources, configData = {}, root) {
+  const mainContent = root.querySelector("#mk-calendarOptions");
   const dropdownContainer = document.createElement("div");
   dropdownContainer.className = "mb-3";
 
@@ -278,7 +283,7 @@ function createCalendarDropdown(resources, configData = {}) {
   });
 
   dropdown.addEventListener("change", (event) => {
-    loadCalendar(event.target.value, configData); // Lade den ausgewählten Kalender
+    loadCalendar(event.target.value, configData, root); // Lade den ausgewählten Kalender
   });
 
   dropdownContainer.appendChild(dropdown);
@@ -286,15 +291,16 @@ function createCalendarDropdown(resources, configData = {}) {
 }
 
 // Kalender laden und anzeigen (ICS über Proxy laden)
-function loadCalendar(calendarUrl, configData = {}) {
+function loadCalendar(calendarUrl, configData = {}, root) {
   if (!calendarUrl) {
     console.error("Keine URL für den Kalender angegeben.");
     showMkError(
+      root,
       "Für den ausgewählten Kalender ist keine Datenquelle hinterlegt.",
     );
     return;
   }
-  clearMkStatus();
+  clearMkStatus(root);
   // ICS laden: direkt oder ueber den ODAS-Proxy (proxyAktiv)
   fetchOdasResource(calendarUrl, configData)
     .then(async (icsData) => {
@@ -303,17 +309,18 @@ function loadCalendar(calendarUrl, configData = {}) {
       const events = parseIcsToEvents(icsData);
       if (events === null) {
         showMkError(
+          root,
           "Der Abfuhrkalender konnte nicht gelesen werden. Bitte versuchen Sie es später erneut.",
         );
         return;
       }
       if (events.length === 0) {
-        showMkInfo("Für diesen Kalender sind derzeit keine Termine hinterlegt.");
+        showMkInfo(root, "Für diesen Kalender sind derzeit keine Termine hinterlegt.");
       }
-      const calendarElement = document.getElementById("calendar");
+      const calendarElement = root.querySelector("#mk-calendar");
 
       const calendarInstance = new calendarJs(
-        "calendar",
+        "mk-calendar",
         window.__TRANSLATION_OPTIONS || {},
         {
           manualEditingEnabled: false,
@@ -330,6 +337,7 @@ function loadCalendar(calendarUrl, configData = {}) {
     .catch((err) => {
       console.error("Fehler beim Laden der Kalenderdaten:", err);
       showMkError(
+        root,
         "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
       );
     });
@@ -393,33 +401,34 @@ function parseIcsToEvents(icsData) {
 }
 
 // Kovertierungs Button
-function createConvertToAllDayButton() {
-  const mainContent = document.getElementById("convertEvents");
+function createConvertToAllDayButton(root) {
+  const mainContent = root.querySelector("#mk-convertEvents");
 
   const button = document.createElement("button");
   button.className = "btn btn-dark mb-3";
   button.textContent = "In ganztägige Termine umwandeln";
 
   button.addEventListener("click", () => {
-    convertToAllDayEvents();
+    convertToAllDayEvents(root);
   });
 
   mainContent.prepend(button);
 }
 
 // Konvertierung zu Ganztägigen Ereignissen Funktion
-function convertToAllDayEvents() {
+function convertToAllDayEvents(root) {
   if (!calendarData || calendarData.length === 0) {
     alert("Es sind keine Termine vorhanden, die umgewandelt werden können.");
     return;
   }
 
-  const calendarElement = document.getElementById("calendar");
+  const calendarElement = root.querySelector("#mk-calendar");
   const calendarInstance = calendarElement.__calendarInstance; // Hol dir die Kalenderinstanz
 
   if (!calendarInstance) {
     console.error("Keine gültige Kalenderinstanz gefunden.");
     showMkError(
+      root,
       "Der Kalender ist noch nicht geladen. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
     );
     return;
@@ -500,8 +509,8 @@ function extractDatenStandMk(apiResponse) {
   return isNaN(d.getTime()) ? null : d.toLocaleDateString("de-DE");
 }
 
-function updateMkFrische(stand) {
-  var el = document.getElementById("mk-datenfrische");
+function updateMkFrische(stand, root) {
+  var el = root.querySelector("#mk-datenfrische");
   if (el) {
     el.innerHTML = stand
       ? '<div class="text-muted small text-end mb-2">Aktualisiert: ' +

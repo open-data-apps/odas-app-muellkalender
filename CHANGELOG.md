@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.15.0 - 2026-08-06
+- CHG: DOM-Zugriffe auf den App-Container gescopt (F-25): alle Elemente der App werden über den App-Container (root.querySelector) angesprochen statt über document; unpräfixierte IDs mit `mk-`-Präfix versehen (`calendarOptions` → `mk-calendarOptions`, `convertEvents` → `mk-convertEvents`, `calendar` → `mk-calendar`) und das ID-String-Argument des Kalender-Bibliotheksaufrufs (`calendarJs("mk-calendar", …)`) mitgezogen
+
 ## 1.14.0 - 2026-08-06
 - FIX: Datenschutzangabe beschreibt den tatsaechlichen Stand nach dem Vendoring (Welle G)
 
