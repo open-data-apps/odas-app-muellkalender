@@ -5,6 +5,8 @@
  * @param {Object} configData - Alle Konfigurationsdaten der App
  * @returns {string} - darzustellendes HTML
  */
+let mkInstanzZaehler = 0;
+let mkUid = "i1";
 let calendarData = {};
 let calendarAssetsPromise = null;
 
@@ -95,6 +97,7 @@ function ensureCalendarAssets() {
 }
 
 function app(configData, enclosingHtmlDivElement) {
+  mkUid = "i" + ++mkInstanzZaehler;
   enclosingHtmlDivElement.innerHTML = `<div class="row">
       <div class="col-6" id="mk-calendarOptions">
       </div>
@@ -474,12 +477,12 @@ function methodikBox(configdata) {
   return (
     '<section class="mk-methodik mt-4">' +
     '<button class="mk-methodik-toggle collapsed" type="button" ' +
-    'data-bs-toggle="collapse" data-bs-target="#mk-methodik-body" ' +
-    'aria-expanded="false" aria-controls="mk-methodik-body">' +
+    'data-bs-toggle="collapse" data-bs-target="#mk-methodik-body-' + mkUid + '" ' +
+    'aria-expanded="false" aria-controls="mk-methodik-body-' + mkUid + '">' +
     '<h2 class="h5 mb-0">Methodik &amp; Datenquelle</h2>' +
     '<span class="mk-methodik-chevron" aria-hidden="true">&#9662;</span>' +
     "</button>" +
-    '<div id="mk-methodik-body" class="collapse">' +
+    '<div id="mk-methodik-body-' + mkUid + '" class="collapse">' +
     '<div class="mk-methodik-content">' +
     standZeile +
     hinweis +

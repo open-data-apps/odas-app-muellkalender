@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.16.0 - 2026-08-07
+- CHG: Bootstrap-Ziele der Methodik-Box instanzeindeutig gemacht (F-32): `data-bs-target`, `aria-controls` und die Collapse-Div-ID (`mk-methodik-body`) tragen ein instanzbezogenes Suffix (`-<uid>`), damit mehrere Instanzen derselben App auf einer Seite nicht kollidieren; die Instanzkennung wird beim `app()`-Einstieg zugewiesen und im Methodik-Helfer direkt verwendet (synchroner Renderpfad)
+
 ## 1.15.0 - 2026-08-06
 - CHG: DOM-Zugriffe auf den App-Container gescopt (F-25): alle Elemente der App werden über den App-Container (root.querySelector) angesprochen statt über document; unpräfixierte IDs mit `mk-`-Präfix versehen (`calendarOptions` → `mk-calendarOptions`, `convertEvents` → `mk-convertEvents`, `calendar` → `mk-calendar`) und das ID-String-Argument des Kalender-Bibliotheksaufrufs (`calendarJs("mk-calendar", …)`) mitgezogen
 
