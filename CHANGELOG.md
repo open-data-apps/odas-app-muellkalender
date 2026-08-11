@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.18.0 - 2026-08-11
+- FIX: Laufzeitzustand pro App-Instanz isoliert (F-42): Modul-Globale `mkUid`, `calendarData` und `mkDatenfrische` in ein pro `app()`-Aufruf geschlossenes `state`-Objekt (uid, root, config, calendarData, datenfrische) gezogen; Kalender-Container und Steuerelemente tragen instanzeindeutige IDs (`mk-calendar-<uid>`, `mk-calendarOptions-<uid>`, `mk-convertEvents-<uid>`), `new calendarJs("mk-calendar-<uid>", …)` zielt auf die eigene Instanz; `calendarElement.__calendarInstance` bleibt am Element
+
 ## 1.17.0 - 2026-08-11
 - FIX: XSS- und URL-Vertrag geschlossen (F-35): Vendor-Patch `dist/calendar.js`/`dist/calendar.min.js` — Kalender-Titel werden per `textContent` statt `innerHTML` + `rc()` gesetzt; damit endet die Entity-Doppeldekodierung (ICAL + `rc()`) am Titel-Sink, aus `&lt;img …&gt;` im ICS-Titel wird wörtlicher Text statt ausführbares Markup
 

@@ -6,8 +6,6 @@
  * @returns {string} - darzustellendes HTML
  */
 let mkInstanzZaehler = 0;
-let mkUid = "i1";
-let calendarData = {};
 let calendarAssetsPromise = null;
 
 function escapeHtml(value = "") {
@@ -97,26 +95,34 @@ function ensureCalendarAssets() {
 }
 
 function app(configData, enclosingHtmlDivElement) {
-  mkUid = "i" + ++mkInstanzZaehler;
+  // F-42: pro Instanz geschlossener State (Closure in app())
+  const state = {
+    uid: "i" + ++mkInstanzZaehler,
+    root: enclosingHtmlDivElement,
+    config: configData,
+    disposed: false, // wird in Task 9 (onPageLeave) gesetzt
+    calendarData: {},
+    datenfrische: null,
+  };
   enclosingHtmlDivElement.innerHTML = `<div class="row">
-      <div class="col-6" id="mk-calendarOptions">
+      <div class="col-6" id="mk-calendarOptions-${state.uid}">
       </div>
-      <div class="col-6" id="mk-convertEvents">
+      <div class="col-6" id="mk-convertEvents-${state.uid}">
       </div>
     </div>
     <div id="mk-datenfrische"></div>
     <div id="mk-status"></div>
-    <div id="mk-calendar">
+    <div id="mk-calendar-${state.uid}">
     </div>
     <div id="mk-schale4"></div>`;
 
   var mkSchale4 = enclosingHtmlDivElement.querySelector("#mk-schale4");
   if (mkSchale4) {
-    mkSchale4.innerHTML = methodikBox(configData) + renderWeitereInfos(configData);
+    mkSchale4.innerHTML = methodikBox(configData, state.uid) + renderWeitereInfos(configData);
   }
 
-  loadAvailableCalendars(configData, enclosingHtmlDivElement);
-  createConvertToAllDayButton(enclosingHtmlDivElement);
+  loadAvailableCalendars(state, configData, enclosingHtmlDivElement);
+  createConvertToAllDayButton(state, enclosingHtmlDivElement);
 }
 
 // ── SICHTBARE ZUSTÄNDE ───────────────────────────────────────────────────────
@@ -226,24 +232,24 @@ async function fetchOdasJson(targetUrl, configdata = {}) {
 }
 
 // Lade Kalender von der API über Proxy
-function loadAvailableCalendars(configData, root) {
+function loadAvailableCalendars(state, configData, root) {
   // Daten laden: direkt oder ueber den ODAS-Proxy (proxyAktiv)
   fetchOdasJson(configData.apiurl, configData)
     .then((data) => {
-      mkDatenfrische = extractDatenStandMk(data);
-      updateMkFrische(mkDatenfrische, root);
+      state.datenfrische = extractDatenStandMk(data);
+      updateMkFrische(state.datenfrische, root);
       if (data.success && data.result && data.result.resources) {
         const resources = data.result.resources;
         // Ressourcen ohne format-Feld dürfen keinen TypeError auslösen.
-        calendarData = resources.filter((resource) =>
+        state.calendarData = resources.filter((resource) =>
           String((resource && resource.format) || "")
             .toLowerCase()
             .includes("ics")
         );
 
-        if (calendarData.length > 0) {
-          createCalendarDropdown(calendarData, configData, root);
-          loadCalendar(calendarData[0].url, configData, root);
+        if (state.calendarData.length > 0) {
+          createCalendarDropdown(state, state.calendarData, configData, root);
+          loadCalendar(state, state.calendarData[0].url, configData, root);
         } else {
           console.error("Keine Kalender im passenden Format gefunden.");
           showMkInfo(
@@ -269,8 +275,8 @@ function loadAvailableCalendars(configData, root) {
 }
 
 // Dropdown-Menü erstellen
-function createCalendarDropdown(resources, configData = {}, root) {
-  const mainContent = root.querySelector("#mk-calendarOptions");
+function createCalendarDropdown(state, resources, configData = {}, root) {
+  const mainContent = root.querySelector("#mk-calendarOptions-" + state.uid);
   const dropdownContainer = document.createElement("div");
   dropdownContainer.className = "mb-3";
 
@@ -286,7 +292,7 @@ function createCalendarDropdown(resources, configData = {}, root) {
   });
 
   dropdown.addEventListener("change", (event) => {
-    loadCalendar(event.target.value, configData, root); // Lade den ausgewählten Kalender
+    loadCalendar(state, event.target.value, configData, root); // Lade den ausgewählten Kalender
   });
 
   dropdownContainer.appendChild(dropdown);
@@ -294,7 +300,7 @@ function createCalendarDropdown(resources, configData = {}, root) {
 }
 
 // Kalender laden und anzeigen (ICS über Proxy laden)
-function loadCalendar(calendarUrl, configData = {}, root) {
+function loadCalendar(state, calendarUrl, configData = {}, root) {
   if (!calendarUrl) {
     console.error("Keine URL für den Kalender angegeben.");
     showMkError(
@@ -320,10 +326,10 @@ function loadCalendar(calendarUrl, configData = {}, root) {
       if (events.length === 0) {
         showMkInfo(root, "Für diesen Kalender sind derzeit keine Termine hinterlegt.");
       }
-      const calendarElement = root.querySelector("#mk-calendar");
+      const calendarElement = root.querySelector("#mk-calendar-" + state.uid);
 
       const calendarInstance = new calendarJs(
-        "mk-calendar",
+        "mk-calendar-" + state.uid,
         window.__TRANSLATION_OPTIONS || {},
         {
           manualEditingEnabled: false,
@@ -404,28 +410,28 @@ function parseIcsToEvents(icsData) {
 }
 
 // Kovertierungs Button
-function createConvertToAllDayButton(root) {
-  const mainContent = root.querySelector("#mk-convertEvents");
+function createConvertToAllDayButton(state, root) {
+  const mainContent = root.querySelector("#mk-convertEvents-" + state.uid);
 
   const button = document.createElement("button");
   button.className = "btn btn-dark mb-3";
   button.textContent = "In ganztägige Termine umwandeln";
 
   button.addEventListener("click", () => {
-    convertToAllDayEvents(root);
+    convertToAllDayEvents(state, root);
   });
 
   mainContent.prepend(button);
 }
 
 // Konvertierung zu Ganztägigen Ereignissen Funktion
-function convertToAllDayEvents(root) {
-  if (!calendarData || calendarData.length === 0) {
+function convertToAllDayEvents(state, root) {
+  if (!state.calendarData || state.calendarData.length === 0) {
     alert("Es sind keine Termine vorhanden, die umgewandelt werden können.");
     return;
   }
 
-  const calendarElement = root.querySelector("#mk-calendar");
+  const calendarElement = root.querySelector("#mk-calendar-" + state.uid);
   const calendarInstance = calendarElement.__calendarInstance; // Hol dir die Kalenderinstanz
 
   if (!calendarInstance) {
@@ -465,9 +471,7 @@ function convertToAllDayEvents(root) {
   alert("Alle Termine wurden erfolgreich in ganztägige Termine umgewandelt.");
 }
 
-var mkDatenfrische = null;
-
-function methodikBox(configdata) {
+function methodikBox(configdata, uid) {
   var hinweis = String(configdata.datenquelleHinweis || "").trim();
   var stand = String(configdata.datenStand || "").trim();
   if (!hinweis && !stand) return "";
@@ -477,12 +481,12 @@ function methodikBox(configdata) {
   return (
     '<section class="mk-methodik mt-4">' +
     '<button class="mk-methodik-toggle collapsed" type="button" ' +
-    'data-bs-toggle="collapse" data-bs-target="#mk-methodik-body-' + mkUid + '" ' +
-    'aria-expanded="false" aria-controls="mk-methodik-body-' + mkUid + '">' +
+    'data-bs-toggle="collapse" data-bs-target="#mk-methodik-body-' + uid + '" ' +
+    'aria-expanded="false" aria-controls="mk-methodik-body-' + uid + '">' +
     '<h2 class="h5 mb-0">Methodik &amp; Datenquelle</h2>' +
     '<span class="mk-methodik-chevron" aria-hidden="true">&#9662;</span>' +
     "</button>" +
-    '<div id="mk-methodik-body-' + mkUid + '" class="collapse">' +
+    '<div id="mk-methodik-body-' + uid + '" class="collapse">' +
     '<div class="mk-methodik-content">' +
     standZeile +
     hinweis +
