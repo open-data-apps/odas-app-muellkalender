@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.17.0 - 2026-08-11
+- FIX: XSS- und URL-Vertrag geschlossen (F-35): Vendor-Patch `dist/calendar.js`/`dist/calendar.min.js` — Kalender-Titel werden per `textContent` statt `innerHTML` + `rc()` gesetzt; damit endet die Entity-Doppeldekodierung (ICAL + `rc()`) am Titel-Sink, aus `&lt;img …&gt;` im ICS-Titel wird wörtlicher Text statt ausführbares Markup
+
 ## 1.16.0 - 2026-08-07
 - CHG: Bootstrap-Ziele der Methodik-Box instanzeindeutig gemacht (F-32): `data-bs-target`, `aria-controls` und die Collapse-Div-ID (`mk-methodik-body`) tragen ein instanzbezogenes Suffix (`-<uid>`), damit mehrere Instanzen derselben App auf einer Seite nicht kollidieren; die Instanzkennung wird beim `app()`-Einstieg zugewiesen und im Methodik-Helfer direkt verwendet (synchroner Renderpfad)
 
