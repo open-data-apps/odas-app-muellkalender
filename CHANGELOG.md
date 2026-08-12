@@ -1,5 +1,9 @@
 # Changelog
 
+
+## 1.19.0 - 2026-08-12
+- FIX: `app/index.html` auf den Template-Stand (F-47): Datei byte-gleich aus `oda-generic` übernommen — gültiges HTML, deutsche ARIA-Labels, Footer im Body; Titel und Fußzeile bleiben Platzhalter und werden zur Laufzeit aus der Instanz-Config überschrieben
+
 ## 1.18.0 - 2026-08-11
 - FIX: Laufzeitzustand pro App-Instanz isoliert (F-42): Modul-Globale `mkUid`, `calendarData` und `mkDatenfrische` in ein pro `app()`-Aufruf geschlossenes `state`-Objekt (uid, root, config, calendarData, datenfrische) gezogen; Kalender-Container und Steuerelemente tragen instanzeindeutige IDs (`mk-calendar-<uid>`, `mk-calendarOptions-<uid>`, `mk-convertEvents-<uid>`), `new calendarJs("mk-calendar-<uid>", …)` zielt auf die eigene Instanz; `calendarElement.__calendarInstance` bleibt am Element
 
