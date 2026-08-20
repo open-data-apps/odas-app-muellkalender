@@ -8,6 +8,22 @@
 let mkInstanzZaehler = 0;
 let calendarAssetsPromise = null;
 
+// Laufzeit-Cleanups pro App-Instanz, je DOM-Container registriert. onPageLeave
+// iteriert alle registrierten Cleanups (try/catch) und leert die Registry
+// anschliessend — die app/app-base.js ruft onPageLeave beim Seitenwechsel auf.
+const mkCleanups = new Map();
+
+function onPageLeave() {
+  mkCleanups.forEach((cleanup) => {
+    try {
+      cleanup();
+    } catch (_err) {
+      // Ein einzelner Cleanup darf den Seitenwechsel nicht blockieren.
+    }
+  });
+  mkCleanups.clear();
+}
+
 function escapeHtml(value = "") {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -100,10 +116,15 @@ function app(configData, enclosingHtmlDivElement) {
     uid: "i" + ++mkInstanzZaehler,
     root: enclosingHtmlDivElement,
     config: configData,
-    disposed: false, // wird in Task 9 (onPageLeave) gesetzt
+    disposed: false,
     calendarData: {},
     datenfrische: null,
   };
+  mkCleanups.set(enclosingHtmlDivElement, () => {
+    state.disposed = true;
+    const calendarElement = enclosingHtmlDivElement.querySelector("#mk-calendar-" + state.uid);
+    destroyCalendarInstance(calendarElement);
+  });
   enclosingHtmlDivElement.innerHTML = `<div class="row">
       <div class="col-6" id="mk-calendarOptions-${state.uid}">
       </div>
@@ -322,8 +343,26 @@ function createCalendarDropdown(state, resources, configData = {}, root) {
   mainContent.prepend(dropdownContainer);
 }
 
+// Zerstoert eine vorhandene calendarJs-Instanz und leert den root-lokalen
+// Kalendercontainer. Wirft destroy() (Drittanbieter-Code), bleibt die
+// Leerung trotzdem garantiert.
+function destroyCalendarInstance(calendarElement) {
+  if (!calendarElement) return;
+  const instance = calendarElement.__calendarInstance;
+  if (instance && typeof instance.destroy === "function") {
+    try {
+      instance.destroy();
+    } catch (error) {
+      console.error("Fehler beim Zerstören der Kalenderinstanz:", error);
+    }
+  }
+  calendarElement.__calendarInstance = null;
+  calendarElement.innerHTML = "";
+}
+
 // Kalender laden und anzeigen (ICS über Proxy laden)
 function loadCalendar(state, calendarUrl, configData = {}, root) {
+  if (state.disposed) return;
   if (!calendarUrl) {
     console.error("Keine URL für den Kalender angegeben.");
     showMkError(
@@ -333,10 +372,25 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
     return;
   }
   clearMkStatus(root);
+  // Neuer Ladevorgang: vorherige Instanz zerstoeren und Container leeren,
+  // damit beim Ressourcenwechsel keine stale Kalender-DOM stehen bleibt.
+  const calendarElement = root.querySelector("#mk-calendar-" + state.uid);
+  destroyCalendarInstance(calendarElement);
+
+  // Latest-Load-Token: Nur der neueste Ladevorgang darf nach seinem Abschluss
+  // Instanz/DOM/Status anfassen.
+  state.calendarLadeToken = (state.calendarLadeToken || 0) + 1;
+  const ladeToken = state.calendarLadeToken;
+
   // ICS laden: direkt oder ueber den ODAS-Proxy (proxyAktiv)
   fetchOdasResource(calendarUrl, configData)
     .then(async (icsData) => {
       await ensureCalendarAssets();
+      // Veralteter Erfolg / Disposed: weder Kalenderinstanz/DOM noch Status des
+      // neueren Ladevorgangs veraendern.
+      if (state.disposed || state.calendarLadeToken !== ladeToken) {
+        return;
+      }
 
       const events = parseIcsToEvents(icsData);
       if (events === null) {
@@ -348,8 +402,9 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
       }
       if (events.length === 0) {
         showMkInfo(root, "Für diesen Kalender sind derzeit keine Termine hinterlegt.");
+      } else {
+        clearMkStatus(root);
       }
-      const calendarElement = root.querySelector("#mk-calendar-" + state.uid);
 
       const calendarInstance = new calendarJs(
         "mk-calendar-" + state.uid,
@@ -363,11 +418,17 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
           exportICS: true,
         }
       );
-      calendarInstance.setEvents(events);
       calendarElement.__calendarInstance = calendarInstance;
+      calendarInstance.setEvents(events);
     })
     .catch((err) => {
+      // Veralteter Fehler / Disposed: Instanz/DOM/Status des neueren Ladevorgangs
+      // unangetastet lassen.
+      if (state.disposed || state.calendarLadeToken !== ladeToken) {
+        return;
+      }
       console.error("Fehler beim Laden der Kalenderdaten:", err);
+      destroyCalendarInstance(calendarElement);
       showMkError(
         root,
         "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
