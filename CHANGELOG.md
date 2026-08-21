@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.24.0 - 2026-08-20
+- Markdown-Metadaten: Paketbeschreibungen auf echtes Markdown umgestellt, exakte Identität Top-Level/Instanz hergestellt, lokale HTML-Fixture semantisch gespiegelt.
 
 ## 1.23.0 - 2026-08-20
 - FIX: `onPageLeave(page)` ergänzt und über `mkCleanups`-Map registriert (das CHANGELOG behauptete dies bereits bei der F-42-Welle, ohne dass es tatsächlich implementiert wurde); zusätzlich `destroyCalendarInstance()` und einen Latest-Load-Token-Mechanismus (`state.calendarLadeToken`) nachgerüstet, damit ein veralteter Ladevorgang keine neuere Kalenderinstanz mehr überschreiben kann (F-74)
