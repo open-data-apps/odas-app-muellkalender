@@ -248,6 +248,17 @@ async function fetchOdasResource(targetUrl, configdata = {}) {
   }
 }
 
+/**
+ * Löst eine benannte Datenressource aus configdata.apiurls auf.
+ * Neue apiurls-Form (typ: "array"); das frühere skalare apiurl wird nicht mehr gelesen.
+ * @returns {string} getrimmte URL, oder "" für den Zustand "keine Quelle konfiguriert"
+ */
+function getOdasApiUrl(configdata, name) {
+  const liste = Array.isArray(configdata && configdata.apiurls) ? configdata.apiurls : [];
+  const treffer = liste.find((eintrag) => eintrag && eintrag.name === name);
+  return String((treffer && treffer.url) || "").trim();
+}
+
 async function fetchOdasJson(targetUrl, configdata = {}) {
   const rawContent = await fetchOdasResource(targetUrl, configdata);
   try {
@@ -272,13 +283,13 @@ function describeNonJsonPayload(rawContent) {
 
 // Lade Kalender von der API über Proxy
 function loadAvailableCalendars(state, configData, root) {
-  const quelle = String(configData.apiurl || "").trim();
+  const quelle = getOdasApiUrl(configData, "abfuhrtermine");
   if (!quelle || /^\{\{.*\}\}$/.test(quelle) || /^<.*>$/.test(quelle)) {
     showMkInfo(root, "Es ist keine Datenquelle konfiguriert.");
     return;
   }
   // Daten laden: direkt oder ueber den ODAS-Proxy (proxyAktiv)
-  fetchOdasJson(configData.apiurl, configData)
+  fetchOdasJson(getOdasApiUrl(configData, "abfuhrtermine"), configData)
     .then((data) => {
       state.datenfrische = extractDatenStandMk(data);
       updateMkFrische(state.datenfrische, root);

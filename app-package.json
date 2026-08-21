@@ -3,7 +3,7 @@
   "app-entwickler-name": "ondics-gmbh",
   "name-in-url": "muellkalender",
   "name": "Müllkalender",
-  "version": "1.24.0",
+  "version": "1.25.0",
   "odas-app-icon": "assets/odas-app-icon.svg",
   "app-icon": "assets/odas-app-icon.svg",
   "kurzbeschreibung": "Nie wieder die Müllabfuhr verpassen: Diese App zeigt alle Abholtermine übersichtlich an.",
@@ -15,7 +15,7 @@
     "",
     "## Methodik",
     "",
-    "Die App ruft die konfigurierte Datenquelle (`apiurl`) – im Live-Betrieb optional über den ODAS-Proxy (`proxyAktiv`) – als CKAN-`package_show`-JSON ab und behält nur Ressourcen, deren Feld `format` den Teilstring `ICS` enthält (Groß-/Kleinschreibung ignoriert). Für jede gefundene Ressource wird ein Eintrag im Dropdown angelegt; die Aufteilung der Ressourcen kann je nach Anbieter Gebiet, Straße oder Abfallfraktion – auch kombiniert – abbilden.",
+    "Die App ruft die konfigurierte Datenquelle (`apiurls.abfuhrtermine`) – im Live-Betrieb optional über den ODAS-Proxy (`proxyAktiv`) – als CKAN-`package_show`-JSON ab und behält nur Ressourcen, deren Feld `format` den Teilstring `ICS` enthält (Groß-/Kleinschreibung ignoriert). Für jede gefundene Ressource wird ein Eintrag im Dropdown angelegt; die Aufteilung der Ressourcen kann je nach Anbieter Gebiet, Straße oder Abfallfraktion – auch kombiniert – abbilden.",
     "",
     "Beim Wechsel des Dropdowns lädt die App die gewählte Ressource als rohe ICS-Datei (`fetchOdasResource` direkt oder über den Proxy) und parst sie im Browser mit ICAL.js (`ICAL.parse`, `ICAL.Component`, `getAllSubcomponents(\"vevent\")`, `ICAL.Event`) zu Kalenderereignissen mit `from`/`to`, Titel (`summary`) und Beschreibung. Farben werden aus dem Titel per Teilstring-Suche vergeben – `bio` → `green`, `papier` → `blue`, `rest` → `black`, `gelb` → `#ffd966`, sonst `gray` – nach Kleinschreibung und Faltung von `ü`/`ö`/`ä`/`ß`.",
     "",
@@ -124,7 +124,7 @@
         "",
         "## Methodik",
         "",
-        "Die App ruft die konfigurierte Datenquelle (`apiurl`) – im Live-Betrieb optional über den ODAS-Proxy (`proxyAktiv`) – als CKAN-`package_show`-JSON ab und behält nur Ressourcen, deren Feld `format` den Teilstring `ICS` enthält (Groß-/Kleinschreibung ignoriert). Für jede gefundene Ressource wird ein Eintrag im Dropdown angelegt; die Aufteilung der Ressourcen kann je nach Anbieter Gebiet, Straße oder Abfallfraktion – auch kombiniert – abbilden.",
+        "Die App ruft die konfigurierte Datenquelle (`apiurls.abfuhrtermine`) – im Live-Betrieb optional über den ODAS-Proxy (`proxyAktiv`) – als CKAN-`package_show`-JSON ab und behält nur Ressourcen, deren Feld `format` den Teilstring `ICS` enthält (Groß-/Kleinschreibung ignoriert). Für jede gefundene Ressource wird ein Eintrag im Dropdown angelegt; die Aufteilung der Ressourcen kann je nach Anbieter Gebiet, Straße oder Abfallfraktion – auch kombiniert – abbilden.",
         "",
         "Beim Wechsel des Dropdowns lädt die App die gewählte Ressource als rohe ICS-Datei (`fetchOdasResource` direkt oder über den Proxy) und parst sie im Browser mit ICAL.js (`ICAL.parse`, `ICAL.Component`, `getAllSubcomponents(\"vevent\")`, `ICAL.Event`) zu Kalenderereignissen mit `from`/`to`, Titel (`summary`) und Beschreibung. Farben werden aus dem Titel per Teilstring-Suche vergeben – `bio` → `green`, `papier` → `blue`, `rest` → `black`, `gelb` → `#ffd966`, sonst `gray` – nach Kleinschreibung und Faltung von `ü`/`ö`/`ä`/`ß`.",
         "",
@@ -225,17 +225,24 @@
       },
       "erforderlich": "ja"
     },
-    "apiurl": {
-      "label": "URL zu den Daten",
+    "apiurls": {
+      "label": "URLs zu Datenressourcen",
       "category": "datenherkunft",
-      "hilfe": "Direkter, maschinenlesbarer Endpunkt (ICS), von dem die App die Ressourcen lädt — nicht die Datensatzseite im ODP (siehe „URL zum Datensatz im ODP\").",
+      "hilfe": "Direkter Download-, Datei- oder API-Endpunkt der tatsächlich verwendeten Datenquelle(n). Mehrere Einträge möglich.",
+      "typ": "array",
       "format": {
         "typ": "url",
-        "laenge": 255
+        "laenge": 500
       },
-      "default": "{{appconfig.datensatz-apiurl}}",
-      "beispiel": "https://open-data-musterstadt.ckan.de/api/3/action/package_show?id=muellkalender_2024",
-      "erforderlich": "ja"
+      "urls": [
+        {
+          "name": "abfuhrtermine",
+          "label": "URL zu den Daten",
+          "default": "{{appconfig.datensatz-apiurl}}",
+          "beispiel": "https://open-data-musterstadt.ckan.de/api/3/action/package_show?id=muellkalender_2024",
+          "erforderlich": "ja"
+        }
+      ]
     },
     "sprache": {
       "label": "Sprache der App",
