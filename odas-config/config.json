@@ -40,5 +40,5 @@
   "sprache": "de",
   "datenquelleHinweis": "<p>Die Müllkalender-App lädt Abfuhrtermine aus der konfigurierten Datenquelle und bereitet sie nach Gebiet, Straße oder Abfallfraktion auf. Die angezeigten Termine entsprechen dem Datenstand der Quelle; verbindlich bleiben die Informationen der zuständigen Entsorgungsstelle.</p>",
   "datenStand": "Stand: abhängig vom konfigurierten Abfuhrkalender",
-  "weiterfuehrendeLinks": "<ul><li><a href=\"{{odp.url}}\" target=\"_blank\" rel=\"noopener\">{{odp.name}}</a></li><li><a href=\"{{appconfig.datensatz-apiurl}}\" target=\"_blank\" rel=\"noopener\">Konfigurierter Müllkalender-Endpunkt</a></li><li><a href=\"https://open-data-app-store.de\" target=\"_blank\" rel=\"noopener\">Open Data App Store</a></li></ul>"
+  "weiterfuehrendeLinks": "<ul><li><a href=\"{{odp.url}}\" target=\"_blank\" rel=\"noopener\">{{odp.name}}</a></li><li><a href=\"{{{appinstanz.apiurls.1}}}\" target=\"_blank\" rel=\"noopener\">Konfigurierter Müllkalender-Endpunkt</a></li><li><a href=\"https://open-data-app-store.de\" target=\"_blank\" rel=\"noopener\">Open Data App Store</a></li></ul>"
 }
