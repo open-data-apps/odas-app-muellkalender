@@ -3,7 +3,7 @@
   "app-entwickler-name": "ondics-gmbh",
   "name-in-url": "muellkalender",
   "name": "Müllkalender",
-  "app-version": "1.29.0",
+  "app-version": "1.29.1",
   "app-package-version": "2",
   "odas-app-icon": "assets/odas-app-icon.svg",
   "app-icon": "assets/odas-app-icon.svg",
@@ -327,7 +327,7 @@
   "daten": {
     "beschreibung": "Die Müllkalender-App verarbeitet konfigurierbare Open-Data-Ressourcen aus dem Open Data Portal (z.B. JSON- oder CSV-Endpunkte).",
     "schema": "assets/schema.json",
-    "beispiel": "",
-    "beispiel-url": ""
+    "beispiel": "CKAN-package_show-Antwort mit result.resources[] (ICS-Kalender zur Gebietsauswahl, JSON); Termine stammen aus den gewählten ICS-Dateien (VEVENT: uid/start/title/location).",
+    "beispiel-url": "https://open-data-musterstadt.ckan.de/api/3/action/package_show?id=muellkalender_2024"
   }
 }
