@@ -444,7 +444,9 @@ function isLeerErgebnis(json) {
 function loadAvailableCalendars(state, configData, root) {
   const quelle = getOdasApiUrl(configData, "abfuhrtermine");
   if (!quelle || /^\{\{.*\}\}$/.test(quelle) || /^<.*>$/.test(quelle)) {
-    renderOdasFehler(root, new Error("Keine Datenquelle konfiguriert."), {
+    // Status-Element statt root: das Layout steht bereits; root wuerde das
+    // Convert-Button-Scaffold entfernen (prepend auf null im Zwei-Instanz-Lauf).
+    renderOdasFehler(root.querySelector("#mk-status"), new Error("Keine Datenquelle konfiguriert."), {
       url: quelle,
       label: "Abfuhrtermine-API",
       typLabel: "Datensatz-API",
@@ -457,7 +459,7 @@ function loadAvailableCalendars(state, configData, root) {
   // Downloads und werden bewusst nicht typgeprüft.
   const mkTypWarn = validateUrlTypErwartung(quelle, "ckan-ps");
   if (mkTypWarn) {
-    renderOdasFehler(root, new Error(mkTypWarn), {
+    renderOdasFehler(root.querySelector("#mk-status"), new Error(mkTypWarn), {
       url: quelle,
       label: "Abfuhrtermine-API",
       typLabel: "Datensatz-API",
@@ -499,7 +501,7 @@ function loadAvailableCalendars(state, configData, root) {
     })
     .catch((err) => {
       console.error("Fehler beim Laden der Kalenderdaten:", err);
-      renderOdasFehler(root, err, {
+      renderOdasFehler(root.querySelector("#mk-status"), err, {
         url: quelle,
         label: "Abfuhrtermine-API",
         typLabel: "Datensatz-API",
