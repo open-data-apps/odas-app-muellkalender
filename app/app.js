@@ -444,7 +444,25 @@ function isLeerErgebnis(json) {
 function loadAvailableCalendars(state, configData, root) {
   const quelle = getOdasApiUrl(configData, "abfuhrtermine");
   if (!quelle || /^\{\{.*\}\}$/.test(quelle) || /^<.*>$/.test(quelle)) {
-    showMkInfo(root, "Es ist keine Datenquelle konfiguriert.");
+    renderOdasFehler(root, new Error("Keine Datenquelle konfiguriert."), {
+      url: quelle,
+      label: "Abfuhrtermine-API",
+      typLabel: "Datensatz-API",
+      erwarteterTyp: "ckan-ps",
+    });
+    return;
+  }
+  // Variante A (F-92): Typprüfung vor dem ersten Fetch. Die .ics-Ressourcen,
+  // die aus dieser package_show-Antwort abgeleitet werden, sind Laufzeit-
+  // Downloads und werden bewusst nicht typgeprüft.
+  const mkTypWarn = validateUrlTypErwartung(quelle, "ckan-ps");
+  if (mkTypWarn) {
+    renderOdasFehler(root, new Error(mkTypWarn), {
+      url: quelle,
+      label: "Abfuhrtermine-API",
+      typLabel: "Datensatz-API",
+      erwarteterTyp: "ckan-ps",
+    });
     return;
   }
   // Daten laden: direkt oder ueber den ODAS-Proxy (proxyAktiv)
@@ -481,10 +499,12 @@ function loadAvailableCalendars(state, configData, root) {
     })
     .catch((err) => {
       console.error("Fehler beim Laden der Kalenderdaten:", err);
-      showMkError(
-        root,
-        "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-      );
+      renderOdasFehler(root, err, {
+        url: quelle,
+        label: "Abfuhrtermine-API",
+        typLabel: "Datensatz-API",
+        erwarteterTyp: "ckan-ps",
+      });
     });
 }
 
@@ -599,10 +619,10 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
       }
       console.error("Fehler beim Laden der Kalenderdaten:", err);
       destroyCalendarInstance(calendarElement);
-      showMkError(
-        root,
-        "Die Abfuhrtermine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-      );
+      renderOdasFehler(root, err, {
+        url: calendarUrl,
+        label: "Abfuhrkalender (Ressource)",
+      });
     });
 }
 
