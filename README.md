@@ -14,6 +14,7 @@ Die App ist eine "ODAP App V1".
 - Vollbildansicht
 - Farbliche Kennzeichnung der Müllarten
 - Datenfrische-Indikator (CKAN metadata_modified)
+- Meldungen erscheinen im Statusbereich (keine Browser-Dialoge); ein Fehler beim Laden eines Kalenders lässt die Bereichsauswahl nutzbar
 
 ## Für wen ist diese App?
 

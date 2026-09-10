@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.29.4 - 2026-09-10
+- **FIX (MK-B1):** `mkCleanups.set(...)` ohne Vorgänger-Cleanup — bei Same-Page-Re-Render blieb die alte calendarJs-Instanz samt dokumentweiten Listenern am Leben. Jetzt wird die Vorgänger-Instanz zuerst abgeräumt; damit ist diese Klasse portfolioweit geschlossen.
+- **FIX (MK-B2):** Ein fehlgeschlagener Bibliotheks-Ladevorgang vergiftete den Cache: `calendarAssetsPromise` blieb abgelehnt stehen, sodass jeder weitere Versuch (auch in anderen Instanzen) identisch scheiterte. Der Cache wird jetzt über `resetCalendarAssetsCache()` freigegeben.
+- **FIX (MK-B3):** Beide `alert()`-Dialoge der Ganztags-Konvertierung durch Statusmeldungen (`showMkInfo`) ersetzt.
+- **FIX (MK-B4):** Ein Fehler beim ICS-Laden rief `renderOdasFehler(root, …)` und löschte damit die ganze Oberfläche — Kalender-Dropdown und Konvertier-Button inklusive, ein Wechsel auf einen anderen Kalender war unmöglich. Der Fehler geht jetzt wie alle anderen Pfade ins Status-Element.
+- **FIX (MK-B5):** Abrufe (Abfuhrtermine und ICS) sind per `AbortController` abbrechbar; `fetchOdasResource`/`fetchOdasJson` reichen `signal` durch und werfen `AbortError` unverpackt.
+- **FIX (MK-B6):** Ressourcen ohne `url` werden nicht mehr in die Kalenderauswahl aufgenommen (vorher Eintrag mit `value="undefined"`).
+- **TECH (MK-B7):** `isLeerErgebnis` entfernt (`extractPathFromUrl`/`fetchOdasJson` bleiben Verträge).
+
 ## 1.29.3 - 2026-09-08
 - **FIX:** F-92-Nachbesserung: top-level `escapeHtml` für `renderOdasFehler` bzw. Fehlerrender ins Status-Element statt Root (Layout-Scaffold bleibt erhalten, Regressionen check-two-instance-runtime/check-three-states grün) (1.29.2 -> 1.29.3).
 
