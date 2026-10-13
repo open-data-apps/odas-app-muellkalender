@@ -686,6 +686,7 @@ function expandCalendarOccurrences(icsData) {
   const rangeEnd = new Date(year + 2, 0, 1);
   let recurring = false;
   let steps = 0;
+  let gekuerzt = 0;
   try {
     // ICAL.js 1.x löst TZIDs global auf: nur synchron registrieren und stets restaurieren.
     component.getAllSubcomponents("vtimezone").forEach((zoneComponent) => {
@@ -717,9 +718,18 @@ function expandCalendarOccurrences(icsData) {
       recurring = true;
       const iterator = item.iterator();
       let next;
+      // Budgets je Serie (vor bzw. im Darstellungsfenster) statt eines gemeinsamen
+      // Limits: eine alte oder sehr dichte Serie wird gekürzt, nicht der ganze Kalender.
+      let vorFenster = 0;
+      let imFenster = 0;
       while ((next = iterator.next())) {
-        if (++steps > 20000) throw new Error("Kalender enthält zu viele Wiederholungen für eine sichere Darstellung.");
-        if (next.toJSDate() >= rangeEnd) break;
+        if (++steps > 300000) throw new Error("Kalender enthält zu viele Wiederholungen für eine sichere Darstellung.");
+        const zeitpunkt = next.toJSDate();
+        if (zeitpunkt >= rangeEnd) break;
+        if (zeitpunkt < rangeStart ? ++vorFenster > 100000 : ++imFenster > 5000) {
+          gekuerzt++;
+          break;
+        }
         add(item.getOccurrenceDetails(next), true);
       }
     });
@@ -734,8 +744,9 @@ function expandCalendarOccurrences(icsData) {
   }
   return {
     occurrences,
-    hinweis: recurring ? "Wiederholungen werden vom 01.01." + (year - 1) +
-      " bis 31.12." + (year + 1) + " dargestellt; Einzeltermine bleiben unverändert." : "",
+    hinweis: (recurring ? "Wiederholungen werden vom 01.01." + (year - 1) +
+      " bis 31.12." + (year + 1) + " dargestellt; Einzeltermine bleiben unverändert." : "") +
+      (gekuerzt ? " Bei sehr häufig wiederholten Terminen werden nicht alle Vorkommen angezeigt." : ""),
   };
 }
 
@@ -786,6 +797,8 @@ function parseIcsToEvents(icsData) {
       });
     });
   } catch (error) {
+    // Konkrete Meldung statt „später erneut versuchen“, wenn das Wiederholungsbudget greift.
+    if (error && /zu viele Wiederholungen/.test(error.message)) throw error;
     console.error("Fehler beim Parsen der ICS-Daten:", error);
     // null = Parsen fehlgeschlagen; leeres Array = gelesen, aber ohne Termine.
     // Der Aufrufer unterscheidet daran Fehler- und Leerzustand.
