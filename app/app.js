@@ -58,7 +58,12 @@ function loadStyleOnce(id, href) {
     link.rel = "stylesheet";
     link.href = href;
     link.onload = resolve;
-    link.onerror = () => reject(new Error("Stylesheet konnte nicht geladen werden: " + href));
+    link.onerror = () => {
+      // F-129: Fehlgeschlagenes Tag entfernen, damit ein Wiederholungsversuch
+      // ein neues Tag anlegt statt am toten Tag haengenzubleiben.
+      link.remove();
+      reject(new Error("Stylesheet konnte nicht geladen werden: " + href));
+    };
     document.head.appendChild(link);
   });
 }
@@ -83,7 +88,11 @@ function loadScriptOnce(id, src, globalName) {
       script.dataset.loaded = "true";
       resolve();
     };
-    script.onerror = () => reject(new Error("Script konnte nicht geladen werden: " + src));
+    script.onerror = () => {
+      // F-129: Fehlgeschlagenes Tag entfernen (siehe loadStyleOnce).
+      script.remove();
+      reject(new Error("Script konnte nicht geladen werden: " + src));
+    };
     document.head.appendChild(script);
   });
 }
@@ -625,7 +634,9 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
         );
         return;
       }
-      if (events.length === 0) {
+      if (events.hinweis) {
+        showMkInfo(root, events.hinweis);
+      } else if (events.length === 0) {
         showMkInfo(root, "Für diesen Kalender sind derzeit keine Termine hinterlegt.");
       } else {
         clearMkStatus(root);
@@ -633,14 +644,10 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
 
       const calendarInstance = new calendarJs(
         "mk-calendar-" + state.uid,
-        window.__TRANSLATION_OPTIONS || {},
         {
+          ...(window.__TRANSLATION_OPTIONS || {}),
+          // F-131: Allgemeine Optionen gehören bei Calendar.js 2.12.1 in Argument 2.
           manualEditingEnabled: false,
-          id: "calendar-container",
-          dataSource: events,
-          language: "de",
-          enableNotifications: true,
-          exportICS: true,
         }
       );
       calendarElement.__calendarInstance = calendarInstance;
@@ -666,15 +673,76 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
 }
 
 // Termine aus ICS-Daten extrahieren
+// F-130: ICS-Semantik vor der Calendar.js-Darstellung auswerten.
+function expandCalendarOccurrences(icsData) {
+  const component = new ICAL.Component(ICAL.parse(icsData));
+  const savedZones = new Map();
+  const occurrences = [];
+  const year = new Date().getFullYear();
+  const rangeStart = new Date(year - 1, 0, 1);
+  const rangeEnd = new Date(year + 2, 0, 1);
+  let recurring = false;
+  let steps = 0;
+  try {
+    // ICAL.js 1.x löst TZIDs global auf: nur synchron registrieren und stets restaurieren.
+    component.getAllSubcomponents("vtimezone").forEach((zoneComponent) => {
+      const zone = new ICAL.Timezone(zoneComponent);
+      if (!savedZones.has(zone.tzid)) savedZones.set(zone.tzid, ICAL.TimezoneService.get(zone.tzid));
+      ICAL.TimezoneService.register(zone.tzid, zone);
+    });
+    const items = component.getAllSubcomponents("vevent").map(v => new ICAL.Event(v));
+    const masters = items.filter(item => !item.isRecurrenceException());
+    const add = (details, inRange) => {
+      const { item, startDate, endDate } = details;
+      if (item.component.getFirstPropertyValue("status") === "CANCELLED") return;
+      const from = startDate.toJSDate(), to = endDate.toJSDate();
+      if (inRange && (to < rangeStart || from >= rangeEnd)) return;
+      // RFC 5545 DATE-DTEND ist exklusiv; Calendar.js erwartet den letzten belegten Tag.
+      if (startDate.isDate && to > from) to.setDate(to.getDate() - 1);
+      // Calendar.js kürzt isAllDay-Termine auf den Starttag; mehrtägige Ganztage daher als Spanne bis 23:59.
+      const mehrtaegig = startDate.isDate && to.toDateString() !== from.toDateString();
+      if (mehrtaegig) to.setHours(23, 59, 0, 0);
+      occurrences.push({ item, from, to, isAllDay: startDate.isDate && !mehrtaegig });
+    };
+    masters.forEach((item) => {
+      items.filter(exception => exception.isRecurrenceException() && exception.uid === item.uid)
+        .forEach(exception => item.relateException(exception));
+      if (!item.isRecurring()) {
+        add({ item, startDate: item.startDate, endDate: item.endDate }, false);
+        return;
+      }
+      recurring = true;
+      const iterator = item.iterator();
+      let next;
+      while ((next = iterator.next())) {
+        if (++steps > 20000) throw new Error("Kalender enthält zu viele Wiederholungen für eine sichere Darstellung.");
+        if (next.toJSDate() >= rangeEnd) break;
+        add(item.getOccurrenceDetails(next), true);
+      }
+    });
+    // Einzelne Ausnahme ohne mitgelieferten Serien-Master bleibt ein sichtbarer Termin.
+    items.filter(item => item.isRecurrenceException() && !masters.some(master => master.uid === item.uid))
+      .forEach(item => add({ item, startDate: item.startDate, endDate: item.endDate }, false));
+  } finally {
+    savedZones.forEach((zone, tzid) => {
+      if (zone) ICAL.TimezoneService.register(tzid, zone);
+      else ICAL.TimezoneService.remove(tzid);
+    });
+  }
+  return {
+    occurrences,
+    hinweis: recurring ? "Wiederholungen werden vom 01.01." + (year - 1) +
+      " bis 31.12." + (year + 1) + " dargestellt; Einzeltermine bleiben unverändert." : "",
+  };
+}
+
 function parseIcsToEvents(icsData) {
   const events = [];
   try {
-    const jcalData = ICAL.parse(icsData);
-    const component = new ICAL.Component(jcalData);
-    const vevents = component.getAllSubcomponents("vevent");
-
-    vevents.forEach((vevent) => {
-      const event = new ICAL.Event(vevent);
+    const expansion = expandCalendarOccurrences(icsData);
+    events.hinweis = expansion.hinweis;
+    expansion.occurrences.forEach((occurrence) => {
+      const event = occurrence.item;
 
       // Dynamische Farbzuteilung basierend auf dem Titel.
       // Normalisiert (Kleinschreibung, Umlaute gefaltet) und per Teilstring
@@ -706,8 +774,9 @@ function parseIcsToEvents(icsData) {
 
       // Ereignis hinzufügen
       events.push({
-        from: new Date(event.startDate.toJSDate()),
-        to: new Date(event.endDate.toJSDate()),
+        from: occurrence.from,
+        to: occurrence.to,
+        isAllDay: occurrence.isAllDay,
         title: title,
         description: description,
         color: color, // Farbe setzen

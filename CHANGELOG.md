@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.29.8 - 2026-10-08
+- FIX: F-131: Leseschutz manualEditingEnabled im zweiten Calendar.js-Argument mit deutscher Übersetzung kombinieren. Unwirksame, nicht unterstützte Optionen aus dem dritten Suchoptionen-Argument entfernt.
+
+## 1.29.7 - 2026-10-08
+- FIX: F-130: Ganztägige ICS-Termine mit exklusivem Ende korrekt darstellen; VTIMEZONE kalenderlokal berücksichtigen; Serien einschließlich EXDATE/RECURRENCE-ID expandieren.
+- FIX: F-130 (Nachbesserung): Mehrtägige Ganztagstermine bleiben bis zum letzten belegten Tag sichtbar (Calendar.js kürzt Ganztage sonst auf den Starttag); doppelte VTIMEZONE-Definitionen bleiben kalenderlokal. Abgesagte Termine (STATUS:CANCELLED) werden – auch als Einzeltermin – nicht angezeigt.
+- FIX: Wiederholungen werden für Vorjahr, laufendes Jahr und Folgejahr angezeigt; der Zeitraum steht sichtbar am Kalender. Übermäßige Expansion wird als Fehler statt als vollständiger Kalender behandelt.
+
+## 1.29.6 - 2026-10-02
+- ENH: Verwendete ODAS-Dienste in `odas-services` deklariert.
+
+## 1.29.5 - 2026-09-29
+
+- **FIX:** Audit F-129: Fehlgeschlagene Vendor-Skript-/Style-Tags blieben im Dokument stehen; jeder Wiederholungsversuch wartete auf das tote Tag. Tags werden bei Fehler entfernt, sodass ein neuer Versuch ein neues Tag anlegt (Retry direkt nachgewiesen).
+
 ## 1.29.4 - 2026-09-10
 - **FIX (MK-B1):** `mkCleanups.set(...)` ohne Vorgänger-Cleanup — bei Same-Page-Re-Render blieb die alte calendarJs-Instanz samt dokumentweiten Listenern am Leben. Jetzt wird die Vorgänger-Instanz zuerst abgeräumt; damit ist diese Klasse portfolioweit geschlossen.
 - **FIX (MK-B2):** Ein fehlgeschlagener Bibliotheks-Ladevorgang vergiftete den Cache: `calendarAssetsPromise` blieb abgelehnt stehen, sodass jeder weitere Versuch (auch in anderen Instanzen) identisch scheiterte. Der Cache wird jetzt über `resetCalendarAssetsCache()` freigegeben.
