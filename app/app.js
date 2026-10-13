@@ -181,6 +181,7 @@ function app(configData, enclosingHtmlDivElement) {
 
   loadAvailableCalendars(state, configData, enclosingHtmlDivElement);
   createConvertToAllDayButton(state, enclosingHtmlDivElement);
+  createIcsDownloadButton(state, enclosingHtmlDivElement);
 }
 
 // ── SICHTBARE ZUSTÄNDE ───────────────────────────────────────────────────────
@@ -613,6 +614,7 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
   // Instanz/DOM/Status anfassen.
   state.calendarLadeToken = (state.calendarLadeToken || 0) + 1;
   const ladeToken = state.calendarLadeToken;
+  setIcsDownload(state, root, null);
 
   // ICS laden: direkt oder ueber den ODAS-Proxy (proxyAktiv)
   fetchOdasResource(calendarUrl, configData, {
@@ -634,6 +636,7 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
         );
         return;
       }
+      setIcsDownload(state, root, icsData);
       if (events.hinweis) {
         showMkInfo(root, events.hinweis);
       } else if (events.length === 0) {
@@ -789,6 +792,37 @@ function parseIcsToEvents(icsData) {
     return null;
   }
   return events;
+}
+
+// F-159: Der ICS-Export von Calendar.js 2.12.1 verschiebt Zeiten und schreibt ungültige
+// Ganztage. Stattdessen wird die geladene Original-Kalenderdatei angeboten (inkl.
+// Wiederholungen/Zeitzonen); die iCAL-Option im Bibliotheksdialog blendet app.css aus.
+function createIcsDownloadButton(state, root) {
+  const mainContent = root.querySelector("#mk-convertEvents-" + state.uid);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = "mk-ics-download-" + state.uid;
+  button.className = "btn btn-outline-dark mb-3 ms-2";
+  button.textContent = "Kalender herunterladen (ICS)";
+  button.disabled = true;
+  button.addEventListener("click", () => {
+    if (!state.icsOriginal) return;
+    const url = URL.createObjectURL(new Blob([state.icsOriginal], { type: "text/calendar;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "abfuhrkalender.ics";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  });
+  mainContent.appendChild(button);
+}
+
+function setIcsDownload(state, root, icsText) {
+  state.icsOriginal = icsText;
+  const button = root.querySelector("#mk-ics-download-" + state.uid);
+  if (button) button.disabled = !icsText;
 }
 
 // Kovertierungs Button
