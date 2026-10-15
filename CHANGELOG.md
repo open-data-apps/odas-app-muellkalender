@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.29.14 - 2026-10-15
+- FIX: Kopfzeile bei 360 px ohne Überlauf (Template): Logo- und Burger-Spalte passen sich der Breite an, das Menü-Symbol ragt nicht mehr über den rechten Rand. Keine Änderung an App-Code oder Konfiguration.
+
 ## 1.29.13 - 2026-10-15
 - FIX: Kalender-Überschriften (Titelleiste, Termine in „Alle Veranstaltungen“, Tages-/Wochenansicht) erscheinen wieder in der hellen Standardschrift statt in übergroßer dunkler Schrift; gelbe Tonnen (Gelber Sack) haben dunkle Schrift. Der Button „Kalender herunterladen (ICS)“ schließt bündig mit dem Kalender ab. Die englischen Standard-Feiertage der Kalenderbibliothek (z. B. „Halloween“) werden nicht mehr angezeigt. Die Kalenderauswahl nutzt auf schmalen Bildschirmen die volle Breite. Liegt im aktuellen Monat kein Termin, öffnet der Kalender beim nächsten anstehenden (sonst letzten) Termin. Die Beschreibung nennt den ICS-Download der geladenen Original-Kalenderdatei.
 
