@@ -163,9 +163,9 @@ function app(configData, enclosingHtmlDivElement) {
     destroyCalendarInstance(calendarElement);
   });
   enclosingHtmlDivElement.innerHTML = `<div class="row">
-      <div class="col-6" id="mk-calendarOptions-${state.uid}">
+      <div class="col-12 col-md-6" id="mk-calendarOptions-${state.uid}">
       </div>
-      <div class="col-6" id="mk-convertEvents-${state.uid}">
+      <div class="col-12 col-md-6" id="mk-convertEvents-${state.uid}">
       </div>
     </div>
     <div id="mk-datenfrische"></div>
@@ -661,10 +661,23 @@ function loadCalendar(state, calendarUrl, configData = {}, root) {
           ...(window.__TRANSLATION_OPTIONS || {}),
           // F-131: Allgemeine Optionen gehören bei Calendar.js 2.12.1 in Argument 2.
           manualEditingEnabled: false,
+          holidays: [], // keine englischen Standard-Feiertage von Calendar.js
         }
       );
       calendarElement.__calendarInstance = calendarInstance;
       calendarInstance.setEvents(events);
+      // Der Kalender öffnet im aktuellen Monat; liegen dort keine Termine, zum nächsten
+      // anstehenden (sonst letzten) Termin springen.
+      if (events.length) {
+        const jetzt = new Date();
+        const monatsAnfang = new Date(jetzt.getFullYear(), jetzt.getMonth(), 1);
+        const monatsEnde = new Date(jetzt.getFullYear(), jetzt.getMonth() + 1, 1);
+        if (!events.some((e) => e.from < monatsEnde && (e.to || e.from) >= monatsAnfang)) {
+          const heute = new Date(jetzt.getFullYear(), jetzt.getMonth(), jetzt.getDate());
+          const starts = events.map((e) => e.from).sort((a, b) => a - b);
+          calendarInstance.setCurrentDisplayDate(starts.find((d) => d >= heute) || starts[starts.length - 1]);
+        }
+      }
     })
     .catch((err) => {
       // Veralteter Fehler / Disposed: Instanz/DOM/Status des neueren Ladevorgangs
@@ -784,7 +797,7 @@ function parseIcsToEvents(icsData) {
         { pattern: /bio/, color: "green" },
         { pattern: /papier/, color: "blue" },
         { pattern: /rest/, color: "black" },
-        { pattern: /gelb/, color: "#ffd966" },
+        { pattern: /gelb/, color: "#ffd966", colorText: "#212529" },
       ];
       const treffer = TONNENFARBEN.find((eintrag) =>
         eintrag.pattern.test(normalizedTitle),
@@ -804,6 +817,7 @@ function parseIcsToEvents(icsData) {
         title: title,
         description: description,
         color: color, // Farbe setzen
+        colorText: treffer && treffer.colorText,
       });
     });
   } catch (error) {
@@ -825,7 +839,7 @@ function createIcsDownloadButton(state, root) {
   const button = document.createElement("button");
   button.type = "button";
   button.id = "mk-ics-download-" + state.uid;
-  button.className = "btn btn-outline-dark mb-3 ms-2";
+  button.className = "btn btn-outline-dark mb-3";
   button.textContent = "Kalender herunterladen (ICS)";
   button.disabled = true;
   button.addEventListener("click", () => {
